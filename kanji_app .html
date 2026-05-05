@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>かんじれんしゅう</title>
+
+<style>
+body{font-family:sans-serif;margin:0;background:#f0f8ff;text-align:center}
+.container{max-width:480px;margin:auto;padding:10px}
+.tab button{width:33%;padding:12px;border:none}
+button{margin:5px;padding:12px;border-radius:10px;background:#ffd6a5;border:none}
+.choice{display:block;width:90%;margin:8px auto;padding:12px;background:#bde0fe;border-radius:10px}
+.k{display:inline-block;margin:4px;padding:6px;border-radius:6px;background:#eee}
+.on{background:#caffbf}
+.bad{background:#ffadad}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>🌈かんじれんしゅう</h2>
+
+<div class="tab">
+<button onclick="showTab('quiz')">もんだい</button>
+<button onclick="showTab('manage')">かんり</button>
+<button onclick="showTab('list')">いちらん</button>
+</div>
+
+<!-- 問題 -->
+<div id="quiz">
+<button onclick="start('read')">よみ</button>
+<button onclick="start('write')">かき</button>
+
+<div id="game" style="display:none">
+<div id="score"></div>
+<div id="q"></div>
+<div id="choices"></div>
+<div id="mb"></div>
+<div id="msg"></div>
+</div>
+</div>
+
+<!-- 管理 -->
+<div id="manage" style="display:none">
+
+<h3>📘 小テスト</h3>
+<input id="bad" placeholder="まちがえた漢字">
+<button onclick="applyTest()">反映</button>
+
+<h3>小3追加</h3>
+<input id="add3" placeholder="例：海 森 湖">
+<button onclick="add3()">追加</button>
+
+<div id="selected3"></div>
+
+<h3>まちがい（タップで解除）</h3>
+<div id="mistakes"></div>
+
+</div>
+
+<!-- 一覧 -->
+<div id="list" style="display:none">
+<div id="all"></div>
+</div>
+
+</div>
+
+<script>
+
+// ===== データ =====
+var base=[
+ {q:"山",a:"やま"},
+ {q:"川",a:"かわ"},
+ {q:"水",a:"みず"},
+ {q:"音楽",a:"おんがく"},
+ {q:"学校",a:"がっこう"},
+ {q:"気が（あう）",a:"合う"},
+ {q:"人に（あう）",a:"会う"}
+];
+
+// 小3（拡張可）
+var g3={
+ "海":"うみ","森":"もり","湖":"みずうみ","船":"ふね","島":"しま","橋":"はし"
+};
+
+var active3={},counts={};
+
+// ===== 保存 =====
+function save(){
+ localStorage.setItem("kanji_final",JSON.stringify({active3:active3,counts:counts}));
+}
+function load(){
+ try{
+  var d=JSON.parse(localStorage.getItem("kanji_final")||"{}");
+  active3=d.active3||{};
+  counts=d.counts||{};
+ }catch(e){}
+}
+load();
+
+// ===== タブ =====
+function showTab(id){
+ document.getElementById("quiz").style.display="none";
+ document.getElementById("manage").style.display="none";
+ document.getElementById("list").style.display="none";
+ document.getElementById(id).style.display="block";
+}
+
+// ===== データ統合 =====
+function all(){
+ var arr=base.slice();
+ for(var k in active3){
+  if(active3[k]) arr.push({q:k,a:g3[k]});
+ }
+ return arr;
+}
+
+// ===== ゲーム =====
+var total=20,now=0,correct=0,current,mode;
+
+function start(m){
+ mode=m;
+ now=0;
+ correct=0;
+ document.getElementById("game").style.display="block";
+ nextQ();
+}
+
+function nextQ(){
+ if(now>=total){
+  var s=Math.floor(correct/total*100);
+  var msg="結果："+s+"点 ("+correct+"/"+total+")";
+  if(s===100) msg+="<br>🎉100点！ごほうびをもらおう！";
+  document.getElementById("q").innerHTML=msg;
+  document.getElementById("choices").innerHTML="";
+  document.getElementById("mb").innerHTML="";
+  return;
+ }
+
+ now++;
+
+ var list=all();
+ if(list.length===0) return;
+
+ current=weighted(list);
+
+ document.getElementById("score").innerHTML=
+ now+"/"+total+"　正解："+correct;
+
+ document.getElementById("q").innerHTML=current.q;
+ document.getElementById("msg").innerHTML="";
+ document.getElementById("choices").innerHTML="";
+ document.getElementById("mb").innerHTML="";
+
+ if(mode==="read"){
+  var choices=[current.a];
+  while(choices.length<4 && list.length>1){
+   var r=list[Math.floor(Math.random()*list.length)].a;
+   if(choices.indexOf(r)===-1) choices.push(r);
+  }
+  var html="";
+  for(var i=0;i<choices.length;i++){
+   html+="<button class='choice' onclick='ans(\""+choices[i]+"\")'>"+choices[i]+"</button>";
+  }
+  document.getElementById("choices").innerHTML=html;
+
+ }else{
+  document.getElementById("mb").innerHTML=
+   "<button onclick='judge(true)'>○</button>"+
+   "<button onclick='judge(false)'>×</button>";
+ }
+}
+
+// ===== 重み付き =====
+function weighted(list){
+ var arr=[];
+ for(var i=0;i<list.length;i++){
+  var c=counts[list[i].a]||1;
+  for(var j=0;j<c;j++) arr.push(list[i]);
+ }
+ return arr[Math.floor(Math.random()*arr.length)];
+}
+
+// ===== 回答 =====
+function ans(a){
+ if(a===current.a){
+  correct++;
+  document.getElementById("msg").innerHTML="🎉せいかい";
+ }else{
+  document.getElementById("msg").innerHTML="😢 "+current.a;
+  addCount(current.a);
+ }
+ save();
+ setTimeout(nextQ,800);
+}
+
+function judge(ok){
+ if(ok){
+  correct++;
+  document.getElementById("msg").innerHTML="🎉OK";
+ }else{
+  document.getElementById("msg").innerHTML="😢 "+current.a;
+  addCount(current.a);
+ }
+ save();
+ setTimeout(nextQ,800);
+}
+
+// ===== 強化 =====
+function addCount(k){
+ counts[k]=(counts[k]||1)+3;
+ renderMistakes();
+}
+
+// ===== 小テスト =====
+function applyTest(){
+ var t=document.getElementById("bad").value;
+ var arr=t.replace(/、|,|\s/g,"").split("");
+ for(var i=0;i<arr.length;i++){
+  addCount(arr[i]);
+ }
+ save();
+ alert("反映した！");
+}
+
+// ===== 小3 =====
+function add3(){
+ var t=document.getElementById("add3").value;
+ var arr=t.replace(/、|,|\s/g,"").split("");
+ for(var i=0;i<arr.length;i++){
+  if(g3[arr[i]]) active3[arr[i]]=true;
+ }
+ render3();
+ save();
+}
+
+function render3(){
+ var html="";
+ for(var k in active3){
+  if(active3[k]) html+="<span class='k on'>"+k+"</span>";
+ }
+ document.getElementById("selected3").innerHTML=html;
+}
+
+// ===== ミス一覧 =====
+function renderMistakes(){
+ var html="";
+ for(var k in counts){
+  if(counts[k]>1){
+   html+="<span class='k bad' onclick='resetK(\""+k+"\")'>"+k+"("+counts[k]+")</span>";
+  }
+ }
+ document.getElementById("mistakes").innerHTML=html;
+}
+
+function resetK(k){
+ counts[k]=1;
+ save();
+ renderMistakes();
+}
+
+// 初期
+render3();
+renderMistakes();
+
+</script>
+</body>
+</html>
