@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>漢字れんしゅう v2.6</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:linear-gradient(135deg,#fff9e6 0%,#fff0f5 50%,#e8f4ff 100%);color:#222;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:.75rem .75rem 3rem}
+.app-title{text-align:center;font-size:22px;font-weight:800;color:#ff6b35;margin-bottom:.875rem;letter-spacing:.05em}
+.nav{display:grid;grid-template-columns:1fr 1fr;border-radius:16px;overflow:hidden;margin-bottom:1rem;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.nb{padding:12px 4px;font-size:13px;cursor:pointer;text-align:center;background:#fff;color:#aaa;border:none;font-family:inherit;transition:all .2s;border-right:2px solid #f0f0f0;font-weight:600}
+.nb:last-child{border-right:none}
+.nb.on{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:800}
+.sec{display:none}.sec.on{display:block}
+.mtog{display:grid;grid-template-columns:repeat(3,1fr);border-radius:12px;overflow:hidden;margin-bottom:.625rem;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.mb{padding:10px 4px;font-size:12px;cursor:pointer;text-align:center;background:#fff;color:#aaa;border:none;font-family:inherit;transition:all .2s;border-right:2px solid #f0f0f0;line-height:1.4;font-weight:600}
+.mb:last-child{border-right:none}
+.mb#mb-yomi.on{background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff;font-weight:800}
+.mb#mb-kaki.on{background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff;font-weight:800}
+.mb#mb-test.on{background:linear-gradient(135deg,#43e97b,#38f9d7);color:#222;font-weight:800}
+.ratio-sel{display:flex;gap:8px;margin-bottom:.75rem;align-items:center}
+.ratio-sel span{font-size:12px;color:#555;font-weight:600;white-space:nowrap}
+.rb{padding:7px 14px;border-radius:20px;border:2px solid #ddd;font-size:12px;cursor:pointer;background:#fff;color:#888;font-family:inherit;transition:all .2s;font-weight:600}
+.rb.on{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;font-weight:800}
+.qsel{display:flex;align-items:center;gap:6px;margin-bottom:.875rem;flex-wrap:wrap}
+.qsel span{font-size:13px;color:#555;font-weight:600}
+.qb{padding:7px 16px;border-radius:20px;border:2px solid #ddd;font-size:13px;cursor:pointer;background:#fff;color:#888;font-family:inherit;transition:all .2s;font-weight:600}
+.qb.on{background:linear-gradient(135deg,#f7971e,#ffd200);color:#333;border-color:transparent;font-weight:800;box-shadow:0 3px 8px rgba(255,210,0,.4)}
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:.875rem}
+.sc{border-radius:12px;padding:10px 4px;text-align:center;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.sc:nth-child(1){background:linear-gradient(135deg,#a8edea,#fed6e3)}
+.sc:nth-child(2){background:linear-gradient(135deg,#ffecd2,#fcb69f)}
+.sc:nth-child(3){background:linear-gradient(135deg,#d4fc79,#96e6a1)}
+.sc:nth-child(4){background:linear-gradient(135deg,#fbc2eb,#a18cd1)}
+.scn{font-size:20px;font-weight:800;color:#333}
+.scl{font-size:10px;color:#555;margin-top:1px;font-weight:600}
+.pb{height:8px;border-radius:4px;background:#e0e0e0;overflow:hidden;margin-bottom:.25rem}
+.pf{height:100%;border-radius:4px;background:linear-gradient(90deg,#f7971e,#ffd200,#43e97b);transition:width .4s}
+.ptxt{display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:.875rem;font-weight:600}
+.qcard{background:#fff;border-radius:20px;padding:1.25rem;margin-bottom:.75rem;box-shadow:0 6px 20px rgba(0,0,0,.1);border:3px solid #ffe066}
+.bdgs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.75rem}
+.bdg{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:700}
+.bgrade{background:#ffe066;color:#7a5800}
+.btype{background:#b3e5fc;color:#01579b}
+.bweak{background:#ffcdd2;color:#b71c1c}
+.badd{background:#c8e6c9;color:#1b5e20}
+.qmain{font-size:60px;font-weight:800;color:#333;text-align:center;padding:.625rem 0;letter-spacing:.05em;line-height:1.3}
+.qmain.med{font-size:38px;padding:.5rem 0}
+.qmain.small{font-size:20px;padding:.5rem 0;line-height:1.6}
+.kaki-sentence{font-size:26px;font-weight:800;color:#333;text-align:center;padding:.75rem 0;line-height:1.8;letter-spacing:.05em}
+.kaki-blank{display:inline-block;border-bottom:3px solid #ff6b35;color:#ff6b35;font-weight:800;padding:0 2px;min-width:1.2em}
+.kaki-oku{color:#333;font-weight:800}
+.qsub{font-size:15px;color:#555;text-align:center;margin-top:4px;font-weight:600}
+.qnote{font-size:13px;color:#666;text-align:center;margin-top:.5rem;padding:.5rem;border-top:2px dashed #ffe066;font-weight:600}
+.qhint{font-size:12px;color:#0277bd;text-align:center;margin-top:.375rem;padding:6px 10px;background:#e1f5fe;border-radius:10px;font-weight:600;border-left:3px solid #29b6f6}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.75rem}
+.ch{padding:16px 8px;border:3px solid #e0e0e0;border-radius:14px;font-size:19px;cursor:pointer;text-align:center;background:#fff;color:#333;transition:all .15s;font-family:inherit;min-height:56px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.07)}
+.ch:active{transform:scale(.95)}
+.ch.ok{background:linear-gradient(135deg,#d4fc79,#96e6a1);border-color:#2e7d32;color:#1b5e20;font-weight:800}
+.ch.ng{background:linear-gradient(135deg,#ffecd2,#ff9a9e);border-color:#c62828;color:#b71c1c}
+.revbox{display:none;background:linear-gradient(135deg,#e0f7fa,#e8f5e9);border-radius:16px;padding:.875rem;text-align:center;margin-bottom:.75rem;border:3px solid #80cbc4}
+.revk{font-size:46px;font-weight:800;color:#004d40}
+.revr{font-size:15px;color:#00695c;margin-top:4px;font-weight:700}
+.revex{font-size:13px;color:#26a69a;margin-top:3px;font-weight:600}
+.sj{display:none;gap:10px;margin-bottom:.75rem}
+.jb{flex:1;padding:16px 8px;border-radius:14px;font-size:17px;cursor:pointer;font-family:inherit;border:3px solid;font-weight:800;transition:all .15s;min-height:56px}
+.jok{background:linear-gradient(135deg,#d4fc79,#96e6a1);color:#1b5e20;border-color:#2e7d32}
+.jng{background:linear-gradient(135deg,#ffecd2,#ff9a9e);color:#b71c1c;border-color:#c62828}
+.fb{font-size:17px;font-weight:800;min-height:24px;margin-bottom:.625rem;text-align:center}
+.fb.ok{color:#2e7d32}.fb.ng{color:#c62828}
+/* 結果カード */
+.rescrd{background:#fff;border-radius:20px;padding:1.5rem;text-align:center;display:none;box-shadow:0 8px 24px rgba(0,0,0,.12);border:3px solid #ffe066}
+#result-card{background:linear-gradient(135deg,#fff9e6,#fff0f5);border-radius:16px;padding:1.25rem;margin-bottom:1rem}
+.respt{font-size:72px;font-weight:800;background:linear-gradient(135deg,#f7971e,#ffd200,#f5576c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ressub{font-size:15px;color:#555;margin-top:4px;font-weight:600}
+.resmsg{font-size:14px;margin-top:.875rem;padding:12px;border-radius:12px;color:#333;background:linear-gradient(135deg,#ffecd2,#fff9c4);font-weight:600}
+.reward{font-size:20px;font-weight:800;margin-top:.875rem;padding:14px;border-radius:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;animation:pulse 1s infinite}
+.reward.gold{background:linear-gradient(135deg,#f7971e,#ffd200);color:#333}
+.reward.silver{background:linear-gradient(135deg,#b0bec5,#eceff1);color:#333}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.misslist{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:.875rem}
+.mtag{font-size:15px;padding:5px 12px;border-radius:20px;background:linear-gradient(135deg,#ffecd2,#ff9a9e);color:#b71c1c;font-weight:700}
+.resdate{font-size:11px;color:#aaa;margin-top:.5rem;font-weight:600}
+.btn{padding:12px 20px;border-radius:12px;border:2px solid #ddd;font-size:14px;cursor:pointer;background:#fff;color:#333;transition:all .2s;font-family:inherit;min-height:46px;font-weight:700}
+.btn.pri{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;font-weight:800}
+.btn.save-btn{background:linear-gradient(135deg,#43e97b,#38f9d7);color:#004d40;border-color:transparent;font-weight:800}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:1rem}
+.revbtnwrap{text-align:center;margin-bottom:.75rem}
+.mblk{border:2px solid #e0e0e0;border-radius:16px;padding:1rem;margin-bottom:.875rem;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.06)}
+.mtitle{font-size:15px;font-weight:800;color:#333;margin-bottom:.375rem}
+.mdesc{font-size:12px;color:#666;margin-bottom:.625rem}
+.trow{display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem}
+.tag{font-size:14px;padding:5px 12px;border-radius:20px;cursor:pointer;min-height:34px;display:inline-flex;align-items:center;font-weight:700}
+.tag:active{opacity:.7}
+.tweak{background:linear-gradient(135deg,#ffcdd2,#ef9a9a);color:#b71c1c}
+.ttest{background:linear-gradient(135deg,#c8e6c9,#a5d6a7);color:#1b5e20}
+.slbl{font-size:12px;color:#555;font-weight:700;margin-bottom:.375rem}
+.emsg{font-size:12px;color:#bbb;font-weight:600}
+.minput{width:100%;font-size:15px;padding:10px 12px;border:2px solid #ffe066;border-radius:12px;background:#fffde7;color:#333;font-family:inherit;font-weight:600}
+.minput:focus{outline:none;border-color:#ffd200;background:#fff}
+.picker-wrap{display:flex;flex-wrap:wrap;gap:8px;max-height:320px;overflow-y:auto;padding:4px 2px}
+.pk-btn{position:relative;width:46px;height:46px;border-radius:10px;font-size:20px;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;border:3px solid #e0e0e0;background:#fff;color:#bbb;display:flex;align-items:center;justify-content:center}
+.pk-btn.added{background:linear-gradient(135deg,#f7971e,#ffd200);border-color:#e65c00;color:#333;box-shadow:0 3px 8px rgba(255,180,0,.4)}
+.pk-btn .wb{position:absolute;top:-6px;right:-6px;background:#e53935;color:#fff;font-size:9px;font-weight:800;border-radius:10px;padding:1px 4px;min-width:16px;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="app-title">🌟 かんじれんしゅう 🌟</div>
+<div class="nav">
+  <div class="nb on" id="nb-quiz" onclick="goNav('quiz')">もんだいをとく</div>
+  <div class="nb" id="nb-mgmt" onclick="goNav('mgmt')">かんじかんり</div>
+</div>
+
+<div class="sec on" id="sec-quiz">
+  <div class="mtog">
+    <div class="mb on" id="mb-yomi" onclick="setMode('yomi')">よみ<br><span style="font-size:10px">4つからえらぶ</span></div>
+    <div class="mb" id="mb-kaki" onclick="setMode('kaki')">かき<br><span style="font-size:10px">じぶんでまるつけ</span></div>
+    <div class="mb" id="mb-test" onclick="setMode('test')">小テスト<br><span style="font-size:10px">登録した字</span></div>
+  </div>
+  <div class="ratio-sel">
+    <span>出る割合：</span>
+    <div class="rb on" id="rb-mix" onclick="setRatio('mix')">まぜまぜ</div>
+    <div class="rb" id="rb-only" onclick="setRatio('only')">3年のみ</div>
+  </div>
+  <div class="qsel" id="qsel">
+    <span>もんだい数：</span>
+    <div class="qb on" id="qb20" onclick="setQN(20)">20もん</div>
+    <div class="qb" id="qb30" onclick="setQN(30)">30もん</div>
+    <div class="qb" id="qb50" onclick="setQN(50)">50もん</div>
+  </div>
+  <div class="srow">
+    <div class="sc"><div class="scn" id="s-pt">0</div><div class="scl">点</div></div>
+    <div class="sc"><div class="scn" id="s-q">0/20</div><div class="scl">もんめ</div></div>
+    <div class="sc"><div class="scn" id="s-ok">0</div><div class="scl">正解</div></div>
+    <div class="sc"><div class="scn" id="s-wk">0</div><div class="scl">まちがい多い</div></div>
+  </div>
+  <div class="pb"><div class="pf" id="pf" style="width:0%"></div></div>
+  <div class="ptxt"><span id="ptxt">0もんかんりょう</span><span id="mlbl">よみもんだい</span></div>
+  <div class="qcard" id="qcard">
+    <div class="bdgs" id="bdgs"></div>
+    <div id="qbody"></div>
+    <div class="qnote" id="qnote" style="display:none"></div>
+    <div class="qhint" id="qhint" style="display:none"></div>
+  </div>
+  <div class="revbox" id="revbox">
+    <div class="revk" id="revk"></div>
+    <div class="revr" id="revr"></div>
+    <div class="revex" id="revex"></div>
+  </div>
+  <div class="choices" id="choices"></div>
+  <div class="sj" id="sj">
+    <button class="jb jok" onclick="judge(true)">○ かけた</button>
+    <button class="jb jng" onclick="judge(false)">✕ かけなかった</button>
+  </div>
+  <div class="fb" id="fb"></div>
+  <div class="revbtnwrap"><button class="btn" id="revbtn" onclick="doReveal()" style="display:none;width:100%;font-size:15px">こたえを見る</button></div>
+  <div class="rescrd" id="rescrd">
+    <div id="result-card">
+      <div style="font-size:13px;font-weight:800;color:#ff6b35;margin-bottom:.5rem">🌟 かんじれんしゅう</div>
+      <div class="respt" id="respt"></div>
+      <div class="ressub" id="ressub"></div>
+      <div class="resmsg" id="resmsg"></div>
+      <div id="reward-box"></div>
+      <div class="misslist" id="misslist"></div>
+      <div class="resdate" id="resdate"></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn pri" onclick="startSess()" style="font-size:15px;padding:14px 24px">もう一度</button>
+      <button class="btn save-btn" onclick="saveResultImg()" style="font-size:15px;padding:14px 24px">📸 ほぞん</button>
+    </div>
+  </div>
+</div>
+
+<div class="sec" id="sec-mgmt">
+  <div class="mblk" style="border-color:#ffe066">
+    <div class="mtitle">3年生の漢字を追加 🎯</div>
+    <div class="mdesc">習った漢字をタップして追加！追加すると訓読み・音読み・関連熟語が全部問題に出ます。</div>
+    <div style="display:flex;gap:6px;margin-bottom:.75rem">
+      <input class="minput" id="mi" placeholder="直接入力（例：化　感　深）" style="flex:1">
+      <button class="btn pri" onclick="addManual()" style="white-space:nowrap;padding:10px 14px">追加</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem">
+      <div style="font-size:12px;color:#666;font-weight:700" id="g3-count">0 / 196字 追加済み</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" style="padding:5px 10px;font-size:11px" onclick="selectAll3()">全部追加</button>
+        <button class="btn" style="padding:5px 10px;font-size:11px" onclick="clearAll3()">全部消す</button>
+      </div>
+    </div>
+    <div class="picker-wrap" id="g3-picker"></div>
+  </div>
+
+  <div class="mblk" style="border-color:#b3e5fc">
+    <div class="mtitle">小テストの漢字を入力 📝</div>
+    <div class="mdesc">テスト用紙を見ながら入力してください。スペースや読点で区切ってOKです。</div>
+    <div style="margin-bottom:.625rem">
+      <div class="slbl">テストに出た字（例：化　感じる　登山）</div>
+      <div style="display:flex;gap:6px">
+        <input class="minput" id="test-input" placeholder="漢字・熟語を入力" style="flex:1">
+        <button class="btn pri" onclick="addTestKanji()" style="white-space:nowrap;padding:10px 14px">追加</button>
+      </div>
+    </div>
+    <div style="margin-bottom:.75rem">
+      <div class="slbl">まちがえた字（例：感　登山）</div>
+      <div style="display:flex;gap:6px">
+        <input class="minput" id="miss-input" placeholder="まちがえた漢字を入力" style="flex:1">
+        <button class="btn" onclick="addMissKanji()" style="white-space:nowrap;padding:10px 14px;background:#ffcdd2;border-color:#ef9a9a;color:#b71c1c;font-weight:700">まちがい登録</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+      <div style="font-size:12px;color:#666;font-weight:700" id="test-count">0字選んでいます</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn" style="padding:5px 10px;font-size:11px" onclick="selectAllTest()">追加字を全部選ぶ</button>
+        <button class="btn" style="padding:5px 10px;font-size:11px" onclick="clearAllTest()">全部消す</button>
+      </div>
+    </div>
+    <div class="trow" id="test-picker"><div class="emsg">まだ小テストの漢字がありません</div></div>
+  </div>
+
+  <div class="mblk" style="border-color:#ffcdd2">
+    <div class="mtitle">まちがい多い漢字</div>
+    <div class="mdesc">まちがえるたびに問題に多く出ます。タップで解除。</div>
+    <div class="trow" id="tweak"><div class="emsg">まだありません</div></div>
+  </div>
+
+  <div class="mblk" style="border-color:#b3e5fc">
+    <div class="mtitle">データの保存・読み込み 💾</div>
+    <div class="mdesc">アプリを作り直してもデータが消えません。新しいアプリを入れる前に保存してください。</div>
+    <div style="display:flex;gap:8px;margin-bottom:.625rem">
+      <button class="btn pri" onclick="exportData()" style="flex:1;background:linear-gradient(135deg,#4facfe,#00f2fe);font-size:13px">💾 データを保存</button>
+      <button class="btn pri" onclick="document.getElementById('import-file').click()" style="flex:1;background:linear-gradient(135deg,#43e97b,#38f9d7);color:#004d40;font-size:13px">📂 データを読み込む</button>
+    </div>
+    <input type="file" id="import-file" accept=".txt,.json" style="display:none" onchange="importData(event)">
+    <div id="import-msg"></div>
+    <div style="font-size:11px;color:#999;margin-top:4px;font-weight:600">
+      保存 → kanji_data.txt がダウンロードされます<br>
+      読み込み → 保存した kanji_data.txt を選んでください
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ===== 音 =====
+let audioCtx=null;
+function getAudio(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+function playSound(type){
+  const ctx=getAudio();if(!ctx)return;
+  if(type==='ok'){const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(523,ctx.currentTime);o.frequency.setValueAtTime(659,ctx.currentTime+.1);o.frequency.setValueAtTime(784,ctx.currentTime+.2);g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.5);o.start(ctx.currentTime);o.stop(ctx.currentTime+.5);}
+  else if(type==='ng'){const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(200,ctx.currentTime);o.frequency.setValueAtTime(150,ctx.currentTime+.15);g.gain.setValueAtTime(.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.4);o.start(ctx.currentTime);o.stop(ctx.currentTime+.4);}
+  else if(type==='perfect'){[523,659,784,1047].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime(.25,ctx.currentTime+i*.12);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.12+.4);o.start(ctx.currentTime+i*.12);o.stop(ctx.currentTime+i*.12+.4);});}
+}
+
+// ===== 漢字データ（音読み・訓読み両対応） =====
+// 構造: k=漢字, kun=訓読み, on=音読み, ex=書き問題例文, hint=ヒント, juku=関連熟語キー
+// kun: {r:読み, ok:送り仮名}
+// on: {r:読み}
+const K2=[
+  {k:'国',kun:{r:'くに',ok:''},on:{r:'こく'},ex:'くにの旗をかいた',hint:'くに'},
+  {k:'語',kun:{r:'ご',ok:''},on:{r:'ご'},ex:'国ごを勉強する',hint:'ご'},
+  {k:'話',kun:{r:'はな',ok:'す'},on:{r:'わ'},ex:'友達にはなしかける',hint:'はな'},
+  {k:'読',kun:{r:'よ',ok:'む'},on:{r:'どく'},ex:'本をよむ',hint:'よ'},
+  {k:'書',kun:{r:'か',ok:'く'},on:{r:'しょ'},ex:'日記をかく',hint:'か'},
+  {k:'体',kun:{r:'から',ok:'だ'},on:{r:'たい'},ex:'からだを動かす',hint:'から'},
+  {k:'動',kun:{r:'うご',ok:'く'},on:{r:'どう'},ex:'体がうごく',hint:'うご'},
+  {k:'楽',kun:{r:'たの',ok:'しい'},on:{r:'がく'},ex:'遊びがたのしい',hint:'たの'},
+  {k:'作',kun:{r:'つく',ok:'る'},on:{r:'さく'},ex:'箱をつくる',hint:'つく'},
+  {k:'道',kun:{r:'みち',ok:''},on:{r:'どう'},ex:'みちを歩く',hint:'みち'},
+  {k:'家',kun:{r:'いえ',ok:''},on:{r:'か'},ex:'いえに帰る',hint:'いえ'},
+  {k:'東',kun:{r:'ひがし',ok:''},on:{r:'とう'},ex:'ひがしの空が明るい',hint:'ひがし'},
+  {k:'西',kun:{r:'にし',ok:''},on:{r:'せい'},ex:'にしへ歩く',hint:'にし'},
+  {k:'南',kun:{r:'みなみ',ok:''},on:{r:'なん'},ex:'みなみの島に行く',hint:'みなみ'},
+  {k:'北',kun:{r:'きた',ok:''},on:{r:'ほく'},ex:'きたの空に星がある',hint:'きた'},
+  {k:'高',kun:{r:'たか',ok:'い'},on:{r:'こう'},ex:'山がたかい',hint:'たか'},
+  {k:'長',kun:{r:'なが',ok:'い'},on:{r:'ちょう'},ex:'川がながい',hint:'なが'},
+  {k:'強',kun:{r:'つよ',ok:'い'},on:{r:'きょう'},ex:'風がつよい',hint:'つよ'},
+  {k:'弱',kun:{r:'よわ',ok:'い'},on:{r:'じゃく'},ex:'体がよわい',hint:'よわ'},
+  {k:'多',kun:{r:'おお',ok:'い'},on:{r:'た'},ex:'星がおおい',hint:'おお'},
+  {k:'少',kun:{r:'すく',ok:'ない'},on:{r:'しょう'},ex:'水がすくない',hint:'すく'},
+  {k:'新',kun:{r:'あたら',ok:'しい'},on:{r:'しん'},ex:'あたらしい本を買った',hint:'あたら'},
+  {k:'古',kun:{r:'ふる',ok:'い'},on:{r:'こ'},ex:'ふるい家に住む',hint:'ふる'},
+  {k:'遠',kun:{r:'とお',ok:'い'},on:{r:'えん'},ex:'学校がとおい',hint:'とお'},
+  {k:'近',kun:{r:'ちか',ok:'い'},on:{r:'きん'},ex:'駅がちかい',hint:'ちか'},
+  {k:'明',kun:{r:'あか',ok:'るい'},on:{r:'めい'},ex:'部屋があかるい',hint:'あか'},
+  {k:'暗',kun:{r:'くら',ok:'い'},on:{r:'あん'},ex:'夜道がくらい',hint:'くら'},
+  {k:'海',kun:{r:'うみ',ok:''},on:{r:'かい'},ex:'うみで泳ぐ',hint:'うみ'},
+  {k:'思',kun:{r:'おも',ok:'う'},on:{r:'し'},ex:'友達のことをおもう',hint:'おも'},
+  {k:'聞',kun:{r:'き',ok:'く'},on:{r:'ぶん'},ex:'音楽をきく',hint:'き'},
+  {k:'歌',kun:{r:'うた',ok:'う'},on:{r:'か'},ex:'大きな声でうたう',hint:'うた'},
+  {k:'走',kun:{r:'はし',ok:'る'},on:{r:'そう'},ex:'グラウンドをはしる',hint:'はし'},
+  {k:'帰',kun:{r:'かえ',ok:'る'},on:{r:'き'},ex:'家にかえる',hint:'かえ'},
+  {k:'会',kun:{r:'あ',ok:'う'},on:{r:'かい'},ex:'友達とあう',hint:'あ'},
+  {k:'合',kun:{r:'あ',ok:'う'},on:{r:'ごう'},ex:'気があう',hint:'あ'},
+  {k:'切',kun:{r:'き',ok:'る'},on:{r:'せつ'},ex:'紙をきる',hint:'き'},
+  {k:'着',kun:{r:'き',ok:'る'},on:{r:'ちゃく'},ex:'服をきる',hint:'き'},
+  {k:'放',kun:{r:'はな',ok:'す'},on:{r:'ほう'},ex:'手をはなす',hint:'はな'},
+  {k:'変',kun:{r:'か',ok:'える'},on:{r:'へん'},ex:'形をかえる',hint:'か'},
+  {k:'太',kun:{r:'ふと',ok:'い'},on:{r:'たい'},ex:'えんぴつがふとい',hint:'ふと'},
+  {k:'細',kun:{r:'ほそ',ok:'い'},on:{r:'さい'},ex:'糸がほそい',hint:'ほそ'},
+  {k:'広',kun:{r:'ひろ',ok:'い'},on:{r:'こう'},ex:'公園がひろい',hint:'ひろ'},
+  {k:'通',kun:{r:'とお',ok:'る'},on:{r:'つう'},ex:'橋をとおる',hint:'とお'},
+  {k:'星',kun:{r:'ほし',ok:''},on:{r:'せい'},ex:'ほしが光る',hint:'ほし'},
+  {k:'雪',kun:{r:'ゆき',ok:''},on:{r:'せつ'},ex:'ゆきが降る',hint:'ゆき'},
+  {k:'風',kun:{r:'かぜ',ok:''},on:{r:'ふう'},ex:'かぜが吹く',hint:'かぜ'},
+  {k:'春',kun:{r:'はる',ok:''},on:{r:'しゅん'},ex:'はるになると花が咲く',hint:'はる'},
+  {k:'夏',kun:{r:'なつ',ok:''},on:{r:'か'},ex:'なつは暑い',hint:'なつ'},
+  {k:'秋',kun:{r:'あき',ok:''},on:{r:'しゅう'},ex:'あきは葉が赤くなる',hint:'あき'},
+  {k:'冬',kun:{r:'ふゆ',ok:''},on:{r:'とう'},ex:'ふゆは寒い',hint:'ふゆ'},
+];
+
+// 3年生196字（音読み・訓読み両対応）
+const K3=[
+  {k:'悪',kun:{r:'わる',ok:'い'},on:{r:'あく'},ex:'試合でわるい結果になった',hint:'よくないこと',keys:['悪']},
+  {k:'安',kun:{r:'やす',ok:'い'},on:{r:'あん'},ex:'ねだんがやすい',hint:'ねだんが低い',keys:['安']},
+  {k:'暗',kun:{r:'くら',ok:'い'},on:{r:'あん'},ex:'夜道がくらい',hint:'光がない',keys:['暗']},
+  {k:'医',kun:{r:'い',ok:''},on:{r:'い'},ex:'いしゃに行く',hint:'病気を治す',keys:['医']},
+  {k:'委',kun:{r:'い',ok:''},on:{r:'い'},ex:'クラスのいいんになった',hint:'代表',keys:['委']},
+  {k:'意',kun:{r:'い',ok:''},on:{r:'い'},ex:'いけんを言う',hint:'考え・気もち',keys:['意']},
+  {k:'育',kun:{r:'そだ',ok:'てる'},on:{r:'いく'},ex:'花をそだてる',hint:'成長させる',keys:['育']},
+  {k:'員',kun:{r:'いん',ok:''},on:{r:'いん'},ex:'委ないんに選ばれた',hint:'メンバー',keys:['員']},
+  {k:'院',kun:{r:'いん',ok:''},on:{r:'いん'},ex:'びょういんに入る',hint:'大きな建物',keys:['院']},
+  {k:'飲',kun:{r:'の',ok:'む'},on:{r:'いん'},ex:'水をのむ',hint:'液体を口に入れる',keys:['飲']},
+  {k:'運',kun:{r:'はこ',ok:'ぶ'},on:{r:'うん'},ex:'荷物をはこぶ',hint:'動かす',keys:['運']},
+  {k:'泳',kun:{r:'およ',ok:'ぐ'},on:{r:'えい'},ex:'プールでおよぐ',hint:'水の中を進む',keys:['泳']},
+  {k:'駅',kun:{r:'えき',ok:''},on:{r:'えき'},ex:'えきに着いた',hint:'電車が止まる場所',keys:['駅']},
+  {k:'央',kun:{r:'おう',ok:''},on:{r:'おう'},ex:'まんなかのちゅうおうに立つ',hint:'真ん中',keys:['央']},
+  {k:'横',kun:{r:'よこ',ok:''},on:{r:'おう'},ex:'よこに並ぶ',hint:'左右の方向',keys:['横']},
+  {k:'屋',kun:{r:'や',ok:''},on:{r:'おく'},ex:'ほんやに行く',hint:'お店',keys:['屋']},
+  {k:'温',kun:{r:'あたた',ok:'かい'},on:{r:'おん'},ex:'スープがあたたかい',hint:'あたたかさ',keys:['温']},
+  {k:'化',kun:{r:'か',ok:''},on:{r:'か'},ex:'虫がへんかする',hint:'変わる',keys:['化']},
+  {k:'荷',kun:{r:'に',ok:''},on:{r:'か'},ex:'重いにもつを持つ',hint:'荷物',keys:['荷']},
+  {k:'界',kun:{r:'かい',ok:''},on:{r:'かい'},ex:'せかいを旅する',hint:'世界・分野',keys:['界']},
+  {k:'開',kun:{r:'ひら',ok:'く'},on:{r:'かい'},ex:'ドアがひらく',hint:'閉じていたものを開ける',keys:['開']},
+  {k:'階',kun:{r:'かい',ok:''},on:{r:'かい'},ex:'三かいに上がる',hint:'建物の階',keys:['階']},
+  {k:'寒',kun:{r:'さむ',ok:'い'},on:{r:'かん'},ex:'冬の朝がさむい',hint:'気温が低い',keys:['寒']},
+  {k:'感',kun:{r:'かん',ok:'じる'},on:{r:'かん'},ex:'寒さをかんじる',hint:'気もちを受け取る',keys:['感']},
+  {k:'漢',kun:{r:'かん',ok:''},on:{r:'かん'},ex:'かんじを練習する',hint:'中国から来た文字',keys:['漢']},
+  {k:'館',kun:{r:'かん',ok:''},on:{r:'かん'},ex:'としょかんで本を読む',hint:'大きな建物',keys:['館']},
+  {k:'岸',kun:{r:'きし',ok:''},on:{r:'がん'},ex:'川のきしに立つ',hint:'水辺の陸',keys:['岸']},
+  {k:'起',kun:{r:'お',ok:'きる'},on:{r:'き'},ex:'朝早くおきる',hint:'立ち上がる',keys:['起']},
+  {k:'期',kun:{r:'き',ok:''},on:{r:'き'},ex:'きたいして待つ',hint:'時期・期間',keys:['期']},
+  {k:'客',kun:{r:'きゃく',ok:''},on:{r:'きゃく'},ex:'おきゃくさんが来た',hint:'来てくれる人',keys:['客']},
+  {k:'究',kun:{r:'きわ',ok:'める'},on:{r:'きゅう'},ex:'理科をけんきゅうする',hint:'深く調べる',keys:['究']},
+  {k:'急',kun:{r:'いそ',ok:'ぐ'},on:{r:'きゅう'},ex:'学校にいそぐ',hint:'急ぎ',keys:['急']},
+  {k:'級',kun:{r:'きゅう',ok:''},on:{r:'きゅう'},ex:'上きゅうに進む',hint:'レベル・クラス',keys:['級']},
+  {k:'宮',kun:{r:'みや',ok:''},on:{r:'きゅう'},ex:'おみやまいりをする',hint:'神様のいる建物',keys:['宮']},
+  {k:'去',kun:{r:'さ',ok:'る'},on:{r:'きょ'},ex:'友達がさる',hint:'はなれる・過去',keys:['去']},
+  {k:'橋',kun:{r:'はし',ok:''},on:{r:'きょう'},ex:'はしを渡る',hint:'川の上にかける',keys:['橋']},
+  {k:'業',kun:{r:'ぎょう',ok:''},on:{r:'ぎょう'},ex:'さぎょうを終える',hint:'仕事・学業',keys:['業']},
+  {k:'曲',kun:{r:'まが',ok:'る'},on:{r:'きょく'},ex:'角をまがる',hint:'カーブする',keys:['曲']},
+  {k:'局',kun:{r:'きょく',ok:''},on:{r:'きょく'},ex:'ゆうびんきょくに行く',hint:'役所・放送局',keys:['局']},
+  {k:'銀',kun:{r:'ぎん',ok:''},on:{r:'ぎん'},ex:'ぎんこうにお金を入れる',hint:'金属・お金',keys:['銀']},
+  {k:'区',kun:{r:'く',ok:''},on:{r:'く'},ex:'くべつして分ける',hint:'区切り・地区',keys:['区']},
+  {k:'苦',kun:{r:'くる',ok:'しい'},on:{r:'く'},ex:'息がくるしい',hint:'つらい',keys:['苦']},
+  {k:'具',kun:{r:'ぐ',ok:''},on:{r:'ぐ'},ex:'どうぐを使う',hint:'使う道具',keys:['具']},
+  {k:'君',kun:{r:'きみ',ok:''},on:{r:'くん'},ex:'きみはどこに行くの',hint:'あなた',keys:['君']},
+  {k:'係',kun:{r:'かかり',ok:''},on:{r:'けい'},ex:'そうじのかかりになる',hint:'担当・関係',keys:['係']},
+  {k:'軽',kun:{r:'かる',ok:'い'},on:{r:'けい'},ex:'荷物がかるい',hint:'重さが少ない',keys:['軽']},
+  {k:'血',kun:{r:'ち',ok:''},on:{r:'けつ'},ex:'ちが出た',hint:'体の中を流れる赤い液体',keys:['血']},
+  {k:'決',kun:{r:'き',ok:'める'},on:{r:'けつ'},ex:'目標をきめる',hint:'決定する',keys:['決']},
+  {k:'研',kun:{r:'けん',ok:''},on:{r:'けん'},ex:'けんきゅうを続ける',hint:'調べる・みがく',keys:['研']},
+  {k:'県',kun:{r:'けん',ok:''},on:{r:'けん'},ex:'けんちょうに行く',hint:'都道府県',keys:['県']},
+  {k:'庫',kun:{r:'こ',ok:''},on:{r:'こ'},ex:'しゃこに車をしまう',hint:'しまう場所',keys:['庫']},
+  {k:'湖',kun:{r:'みずうみ',ok:''},on:{r:'こ'},ex:'みずうみで釣りをする',hint:'陸に囲まれた水',keys:['湖']},
+  {k:'向',kun:{r:'む',ok:'く'},on:{r:'こう'},ex:'東をむく',hint:'方向を向ける',keys:['向']},
+  {k:'幸',kun:{r:'しあわ',ok:'せ'},on:{r:'こう'},ex:'しあわせな気もちになる',hint:'よい状態',keys:['幸']},
+  {k:'港',kun:{r:'みなと',ok:''},on:{r:'こう'},ex:'みなとに船が来た',hint:'船が来る場所',keys:['港']},
+  {k:'号',kun:{r:'ごう',ok:''},on:{r:'ごう'},ex:'ばんごうを呼ばれた',hint:'番号・記号',keys:['号']},
+  {k:'根',kun:{r:'ね',ok:''},on:{r:'こん'},ex:'木のねっこを掘る',hint:'植物の根',keys:['根']},
+  {k:'祭',kun:{r:'まつ',ok:'り'},on:{r:'さい'},ex:'夏のまつりに行く',hint:'お祝い・イベント',keys:['祭']},
+  {k:'皿',kun:{r:'さら',ok:''},on:{r:'さら'},ex:'おさらを洗う',hint:'食器',keys:['皿']},
+  {k:'仕',kun:{r:'し',ok:''},on:{r:'し'},ex:'しごとを終える',hint:'働く',keys:['仕']},
+  {k:'死',kun:{r:'し',ok:'ぬ'},on:{r:'し'},ex:'虫がしぬ',hint:'命が終わる',keys:['死']},
+  {k:'使',kun:{r:'つか',ok:'う'},on:{r:'し'},ex:'道具をつかう',hint:'役立てる',keys:['使']},
+  {k:'始',kun:{r:'はじ',ok:'める'},on:{r:'し'},ex:'練習をはじめる',hint:'スタートする',keys:['始']},
+  {k:'指',kun:{r:'ゆび',ok:''},on:{r:'し'},ex:'ゆびで指す',hint:'手足の指',keys:['指']},
+  {k:'歯',kun:{r:'は',ok:''},on:{r:'し'},ex:'はみがきをする',hint:'口の中にある',keys:['歯']},
+  {k:'詩',kun:{r:'し',ok:''},on:{r:'し'},ex:'しを書く',hint:'言葉で表す芸術',keys:['詩']},
+  {k:'次',kun:{r:'つぎ',ok:''},on:{r:'じ'},ex:'つぎの問題を解く',hint:'順番・次の',keys:['次']},
+  {k:'事',kun:{r:'こと',ok:''},on:{r:'じ'},ex:'大切なことを話す',hint:'できごと・こと',keys:['事']},
+  {k:'持',kun:{r:'も',ok:'つ'},on:{r:'じ'},ex:'かばんをもつ',hint:'手に持つ',keys:['持']},
+  {k:'式',kun:{r:'しき',ok:''},on:{r:'しき'},ex:'入学しきに出る',hint:'行事・方法',keys:['式']},
+  {k:'実',kun:{r:'じつ',ok:''},on:{r:'じつ'},ex:'じつりょくを出す',hint:'本当の・実際の',keys:['実']},
+  {k:'写',kun:{r:'うつ',ok:'す'},on:{r:'しゃ'},ex:'絵をうつす',hint:'うつす',keys:['写']},
+  {k:'者',kun:{r:'もの',ok:''},on:{r:'しゃ'},ex:'がくしゃになる',hint:'人・専門家',keys:['者']},
+  {k:'主',kun:{r:'ぬし',ok:''},on:{r:'しゅ'},ex:'いえのぬしに会う',hint:'中心となる人',keys:['主']},
+  {k:'守',kun:{r:'まも',ok:'る'},on:{r:'しゅ'},ex:'約束をまもる',hint:'守る',keys:['守']},
+  {k:'取',kun:{r:'と',ok:'る'},on:{r:'しゅ'},ex:'ボールをとる',hint:'手で持つ',keys:['取']},
+  {k:'酒',kun:{r:'さけ',ok:''},on:{r:'しゅ'},ex:'お父さんはさけを飲む',hint:'お酒',keys:['酒']},
+  {k:'受',kun:{r:'う',ok:'ける'},on:{r:'じゅ'},ex:'プレゼントをうける',hint:'受け取る',keys:['受']},
+  {k:'州',kun:{r:'しゅう',ok:''},on:{r:'しゅう'},ex:'九しゅうに旅行する',hint:'地域',keys:['州']},
+  {k:'拾',kun:{r:'ひろ',ok:'う'},on:{r:'じゅう'},ex:'ごみをひろう',hint:'落ちたものを取る',keys:['拾']},
+  {k:'終',kun:{r:'お',ok:'わる'},on:{r:'しゅう'},ex:'授業がおわる',hint:'終わる',keys:['終']},
+  {k:'習',kun:{r:'なら',ok:'う'},on:{r:'しゅう'},ex:'ピアノをならう',hint:'くり返し学ぶ',keys:['習']},
+  {k:'集',kun:{r:'あつ',ok:'める'},on:{r:'しゅう'},ex:'切手をあつめる',hint:'集める',keys:['集']},
+  {k:'住',kun:{r:'す',ok:'む'},on:{r:'じゅう'},ex:'この町にすむ',hint:'生活する場所',keys:['住']},
+  {k:'重',kun:{r:'おも',ok:'い'},on:{r:'じゅう'},ex:'荷物がおもい',hint:'重さがある',keys:['重']},
+  {k:'宿',kun:{r:'やど',ok:''},on:{r:'しゅく'},ex:'しゅくだいをする',hint:'とまる・課題',keys:['宿']},
+  {k:'所',kun:{r:'ところ',ok:''},on:{r:'しょ'},ex:'好きなところに行く',hint:'場所',keys:['所']},
+  {k:'暑',kun:{r:'あつ',ok:'い'},on:{r:'しょ'},ex:'夏の日差しがあつい',hint:'気温が高い',keys:['暑']},
+  {k:'助',kun:{r:'たす',ok:'ける'},on:{r:'じょ'},ex:'友達をたすける',hint:'救う・手伝う',keys:['助']},
+  {k:'昭',kun:{r:'しょう',ok:''},on:{r:'しょう'},ex:'しょうわの時代の話',hint:'年号',keys:['昭']},
+  {k:'消',kun:{r:'き',ok:'える'},on:{r:'しょう'},ex:'電気がきえる',hint:'なくなる',keys:['消']},
+  {k:'商',kun:{r:'しょう',ok:''},on:{r:'しょう'},ex:'しょうてんに買い物に行く',hint:'お店',keys:['商']},
+  {k:'章',kun:{r:'しょう',ok:''},on:{r:'しょう'},ex:'文しょうを書く',hint:'文・まとまり',keys:['章']},
+  {k:'勝',kun:{r:'か',ok:'つ'},on:{r:'しょう'},ex:'試合にかつ',hint:'試合に勝つ',keys:['勝']},
+  {k:'乗',kun:{r:'の',ok:'る'},on:{r:'じょう'},ex:'電車にのる',hint:'乗り物に乗る',keys:['乗']},
+  {k:'植',kun:{r:'う',ok:'える'},on:{r:'しょく'},ex:'花壇に花をうえる',hint:'土に苗を入れる',keys:['植']},
+  {k:'申',kun:{r:'もう',ok:'す'},on:{r:'しん'},ex:'先生にもうす',hint:'申し出る',keys:['申']},
+  {k:'身',kun:{r:'み',ok:''},on:{r:'しん'},ex:'みのまわりを整える',hint:'体・自分',keys:['身']},
+  {k:'神',kun:{r:'かみ',ok:''},on:{r:'しん'},ex:'かみさまにお願いする',hint:'神さま',keys:['神']},
+  {k:'真',kun:{r:'ま',ok:''},on:{r:'しん'},ex:'まん中に立つ',hint:'本当の・まっすぐ',keys:['真']},
+  {k:'深',kun:{r:'ふか',ok:'い'},on:{r:'しん'},ex:'川がふかい',hint:'深さがある',keys:['深']},
+  {k:'進',kun:{r:'すす',ok:'む'},on:{r:'しん'},ex:'前にすすむ',hint:'前に向かう',keys:['進']},
+  {k:'世',kun:{r:'よ',ok:''},on:{r:'せ'},ex:'よのなかのことを学ぶ',hint:'世の中',keys:['世']},
+  {k:'整',kun:{r:'ととの',ok:'える'},on:{r:'せい'},ex:'部屋をととのえる',hint:'きれいに並べる',keys:['整']},
+  {k:'昔',kun:{r:'むかし',ok:''},on:{r:'せき'},ex:'むかしの話を聞く',hint:'ずっと前',keys:['昔']},
+  {k:'全',kun:{r:'ぜん',ok:''},on:{r:'ぜん'},ex:'ぜんぶ食べた',hint:'すべて',keys:['全']},
+  {k:'想',kun:{r:'そう',ok:''},on:{r:'そう'},ex:'かんそうを話す',hint:'思い・考え',keys:['想']},
+  {k:'息',kun:{r:'いき',ok:''},on:{r:'そく'},ex:'いきを吸う',hint:'呼吸',keys:['息']},
+  {k:'速',kun:{r:'はや',ok:'い'},on:{r:'そく'},ex:'走るのがはやい',hint:'スピードが速い',keys:['速']},
+  {k:'族',kun:{r:'ぞく',ok:''},on:{r:'ぞく'},ex:'かぞくで出かける',hint:'グループ・仲間',keys:['族']},
+  {k:'他',kun:{r:'ほか',ok:''},on:{r:'た'},ex:'そのほかにもある',hint:'別の・他の',keys:['他']},
+  {k:'打',kun:{r:'う',ok:'つ'},on:{r:'だ'},ex:'ボールをうつ',hint:'たたく',keys:['打']},
+  {k:'対',kun:{r:'たい',ok:''},on:{r:'たい'},ex:'チームとたいけつする',hint:'向き合う・反対',keys:['対']},
+  {k:'待',kun:{r:'ま',ok:'つ'},on:{r:'たい'},ex:'バスをまつ',hint:'来るまでいる',keys:['待']},
+  {k:'代',kun:{r:'だい',ok:''},on:{r:'だい'},ex:'じだいを学ぶ',hint:'時代・代わり',keys:['代']},
+  {k:'第',kun:{r:'だい',ok:''},on:{r:'だい'},ex:'だいいちに走る',hint:'順番',keys:['第']},
+  {k:'題',kun:{r:'だい',ok:''},on:{r:'だい'},ex:'もんだいを解く',hint:'テーマ・課題',keys:['題']},
+  {k:'炭',kun:{r:'すみ',ok:''},on:{r:'たん'},ex:'すみ火で焼く',hint:'燃える黒いもの',keys:['炭']},
+  {k:'短',kun:{r:'みじか',ok:'い'},on:{r:'たん'},ex:'えんぴつがみじかい',hint:'長さが少ない',keys:['短']},
+  {k:'談',kun:{r:'だん',ok:''},on:{r:'だん'},ex:'先生にそうだんする',hint:'話し合う',keys:['談']},
+  {k:'着',kun:{r:'き',ok:'る'},on:{r:'ちゃく'},ex:'制服をきる',hint:'服を身につける',keys:['着']},
+  {k:'注',kun:{r:'そそ',ok:'ぐ'},on:{r:'ちゅう'},ex:'コップに水をそそぐ',hint:'注ぐ・気をつける',keys:['注']},
+  {k:'柱',kun:{r:'はしら',ok:''},on:{r:'ちゅう'},ex:'はしらに寄りかかる',hint:'建物を支えるもの',keys:['柱']},
+  {k:'丁',kun:{r:'てい',ok:''},on:{r:'てい'},ex:'ていねいに書く',hint:'丁寧',keys:['丁']},
+  {k:'帳',kun:{r:'ちょう',ok:''},on:{r:'ちょう'},ex:'れんらくちょうに書く',hint:'ノート・記録',keys:['帳']},
+  {k:'調',kun:{r:'しら',ok:'べる'},on:{r:'ちょう'},ex:'図書館でしらべる',hint:'確かめる',keys:['調']},
+  {k:'追',kun:{r:'お',ok:'う'},on:{r:'つい'},ex:'友達をおいかける',hint:'後を追う',keys:['追']},
+  {k:'定',kun:{r:'さだ',ok:'める'},on:{r:'てい'},ex:'目標をさだめる',hint:'決める',keys:['定']},
+  {k:'庭',kun:{r:'にわ',ok:''},on:{r:'てい'},ex:'にわで遊ぶ',hint:'家の外の空間',keys:['庭']},
+  {k:'笛',kun:{r:'ふえ',ok:''},on:{r:'てき'},ex:'ふえを吹く',hint:'楽器',keys:['笛']},
+  {k:'鉄',kun:{r:'てつ',ok:''},on:{r:'てつ'},ex:'てつどうに乗る',hint:'かたい金属',keys:['鉄']},
+  {k:'転',kun:{r:'ころ',ok:'ぶ'},on:{r:'てん'},ex:'道でころぶ',hint:'倒れる',keys:['転']},
+  {k:'都',kun:{r:'みやこ',ok:''},on:{r:'と'},ex:'とうきょうとに住む',hint:'都市・みやこ',keys:['都']},
+  {k:'度',kun:{r:'ど',ok:''},on:{r:'ど'},ex:'おんどをはかる',hint:'程度・回数',keys:['度']},
+  {k:'投',kun:{r:'な',ok:'げる'},on:{r:'とう'},ex:'ボールをなげる',hint:'放り投げる',keys:['投']},
+  {k:'豆',kun:{r:'まめ',ok:''},on:{r:'とう'},ex:'まめまきをする',hint:'食べ物・小さい',keys:['豆']},
+  {k:'島',kun:{r:'しま',ok:''},on:{r:'とう'},ex:'しまぐにに行く',hint:'海に囲まれた陸',keys:['島']},
+  {k:'湯',kun:{r:'ゆ',ok:''},on:{r:'とう'},ex:'おゆにつかる',hint:'熱い水',keys:['湯']},
+  {k:'登',kun:{r:'のぼ',ok:'る'},on:{r:'とう'},ex:'山をのぼる',hint:'上に向かう',keys:['登']},
+  {k:'等',kun:{r:'ひと',ok:'しい'},on:{r:'とう'},ex:'みんなひとしい',hint:'同じ・など',keys:['等']},
+  {k:'動',kun:{r:'うご',ok:'く'},on:{r:'どう'},ex:'体がうごく',hint:'移動・動作',keys:['動']},
+  {k:'童',kun:{r:'どう',ok:''},on:{r:'どう'},ex:'どうわを読む',hint:'子ども・おとぎ',keys:['童']},
+  {k:'農',kun:{r:'のう',ok:''},on:{r:'のう'},ex:'のうぎょうを学ぶ',hint:'農業・農家',keys:['農']},
+  {k:'波',kun:{r:'なみ',ok:''},on:{r:'は'},ex:'大きななみが来た',hint:'水の動き',keys:['波']},
+  {k:'配',kun:{r:'くば',ok:'る'},on:{r:'はい'},ex:'プリントをくばる',hint:'分けて渡す',keys:['配']},
+  {k:'倍',kun:{r:'ばい',ok:''},on:{r:'ばい'},ex:'二ばいの大きさになった',hint:'数が増える',keys:['倍']},
+  {k:'箱',kun:{r:'はこ',ok:''},on:{r:'はこ'},ex:'おはこに入れる',hint:'入れ物',keys:['箱']},
+  {k:'畑',kun:{r:'はたけ',ok:''},on:{r:'はたけ'},ex:'はたけで野菜を育てる',hint:'野菜を育てる土地',keys:['畑']},
+  {k:'発',kun:{r:'はつ',ok:''},on:{r:'はつ'},ex:'しゅっぱつする',hint:'出る・始まる',keys:['発']},
+  {k:'反',kun:{r:'はん',ok:''},on:{r:'はん'},ex:'はんたいの意見を言う',hint:'逆・反対',keys:['反']},
+  {k:'板',kun:{r:'いた',ok:''},on:{r:'はん'},ex:'こくばんに書く',hint:'平らな板',keys:['板']},
+  {k:'悲',kun:{r:'かな',ok:'しい'},on:{r:'ひ'},ex:'かなしいニュースを聞いた',hint:'悲しい感じょう',keys:['悲']},
+  {k:'皮',kun:{r:'かわ',ok:''},on:{r:'ひ'},ex:'りんごのかわをむく',hint:'外がわのかわ',keys:['皮']},
+  {k:'美',kun:{r:'うつく',ok:'しい'},on:{r:'び'},ex:'花がうつくしい',hint:'きれい',keys:['美']},
+  {k:'鼻',kun:{r:'はな',ok:''},on:{r:'び'},ex:'はなをかむ',hint:'においをかぐ器官',keys:['鼻']},
+  {k:'筆',kun:{r:'ふで',ok:''},on:{r:'ひつ'},ex:'ふでで字を書く',hint:'書く道具',keys:['筆']},
+  {k:'氷',kun:{r:'こおり',ok:''},on:{r:'ひょう'},ex:'こおりが溶ける',hint:'固まった水',keys:['氷']},
+  {k:'表',kun:{r:'ひょう',ok:'す'},on:{r:'ひょう'},ex:'気もちをひょうす',hint:'外がわ・表現する',keys:['表']},
+  {k:'秒',kun:{r:'びょう',ok:''},on:{r:'びょう'},ex:'三びょうで走る',hint:'時間の単位',keys:['秒']},
+  {k:'病',kun:{r:'やまい',ok:''},on:{r:'びょう'},ex:'びょうきになる',hint:'体の不調',keys:['病']},
+  {k:'品',kun:{r:'しな',ok:''},on:{r:'ひん'},ex:'しなものを選ぶ',hint:'商品・品質',keys:['品']},
+  {k:'負',kun:{r:'ま',ok:'ける'},on:{r:'ふ'},ex:'試合にまける',hint:'試合に負ける',keys:['負']},
+  {k:'部',kun:{r:'ぶ',ok:''},on:{r:'ぶ'},ex:'ぶぶんを確かめる',hint:'一部・グループ',keys:['部']},
+  {k:'服',kun:{r:'ふく',ok:''},on:{r:'ふく'},ex:'ふくを着る',hint:'着るもの',keys:['服']},
+  {k:'福',kun:{r:'ふく',ok:''},on:{r:'ふく'},ex:'こうふくな気もちになる',hint:'よいこと・幸せ',keys:['福']},
+  {k:'物',kun:{r:'もの',ok:''},on:{r:'ぶつ'},ex:'ものがたりを読む',hint:'もの・物事',keys:['物']},
+  {k:'平',kun:{r:'たい',ok:'らな'},on:{r:'へい'},ex:'たいらな道を歩く',hint:'なごやか・水平',keys:['平']},
+  {k:'返',kun:{r:'かえ',ok:'す'},on:{r:'へん'},ex:'本をかえす',hint:'戻す',keys:['返']},
+  {k:'勉',kun:{r:'べん',ok:''},on:{r:'べん'},ex:'べんきょうをする',hint:'努力して学ぶ',keys:['勉']},
+  {k:'放',kun:{r:'はな',ok:'す'},on:{r:'ほう'},ex:'手をはなす',hint:'自由にする',keys:['放']},
+  {k:'味',kun:{r:'あじ',ok:'わう'},on:{r:'み'},ex:'料理のあじをみる',hint:'食べ物の味',keys:['味']},
+  {k:'命',kun:{r:'いのち',ok:''},on:{r:'めい'},ex:'いのちを大切にする',hint:'生きる力',keys:['命']},
+  {k:'面',kun:{r:'めん',ok:''},on:{r:'めん'},ex:'おもしろい話をする',hint:'顔・表面',keys:['面']},
+  {k:'問',kun:{r:'もん',ok:''},on:{r:'もん'},ex:'もんだいを解く',hint:'しつもん・課題',keys:['問']},
+  {k:'役',kun:{r:'やく',ok:''},on:{r:'やく'},ex:'やくに立つことをする',hint:'役割',keys:['役']},
+  {k:'薬',kun:{r:'くすり',ok:''},on:{r:'やく'},ex:'くすりを飲む',hint:'病気を治すもの',keys:['薬']},
+  {k:'由',kun:{r:'よし',ok:''},on:{r:'ゆ'},ex:'じゆうに遊ぶ',hint:'理由・自由',keys:['由']},
+  {k:'油',kun:{r:'あぶら',ok:''},on:{r:'ゆ'},ex:'あぶらで炒める',hint:'あぶら',keys:['油']},
+  {k:'有',kun:{r:'あ',ok:'る'},on:{r:'ゆう'},ex:'本がある',hint:'ある・もっている',keys:['有']},
+  {k:'遊',kun:{r:'あそ',ok:'ぶ'},on:{r:'ゆう'},ex:'公園であそぶ',hint:'楽しむ',keys:['遊']},
+  {k:'予',kun:{r:'よ',ok:''},on:{r:'よ'},ex:'よていを立てる',hint:'前もって',keys:['予']},
+  {k:'羊',kun:{r:'ひつじ',ok:''},on:{r:'よう'},ex:'ひつじが草を食べる',hint:'動物',keys:['羊']},
+  {k:'洋',kun:{r:'よう',ok:''},on:{r:'よう'},ex:'ようふくを着る',hint:'西洋の・大きな海',keys:['洋']},
+  {k:'葉',kun:{r:'は',ok:''},on:{r:'よう'},ex:'木のはが落ちる',hint:'植物の葉',keys:['葉']},
+  {k:'陽',kun:{r:'ひ',ok:''},on:{r:'よう'},ex:'たいようが輝く',hint:'日光・明るい',keys:['陽']},
+  {k:'様',kun:{r:'さま',ok:''},on:{r:'よう'},ex:'おきゃくさまが来た',hint:'様子・けいしょう',keys:['様']},
+  {k:'落',kun:{r:'お',ok:'ちる'},on:{r:'らく'},ex:'葉っぱがおちる',hint:'下に落ちる',keys:['落']},
+  {k:'流',kun:{r:'なが',ok:'れる'},on:{r:'りゅう'},ex:'川がながれる',hint:'液体が動く',keys:['流']},
+  {k:'旅',kun:{r:'たび',ok:''},on:{r:'りょ'},ex:'たびに出る',hint:'遠くへ行く',keys:['旅']},
+  {k:'両',kun:{r:'りょう',ok:''},on:{r:'りょう'},ex:'りょうてを広げる',hint:'両方',keys:['両']},
+  {k:'緑',kun:{r:'みどり',ok:''},on:{r:'りょく'},ex:'みどりの木が並ぶ',hint:'草木の色',keys:['緑']},
+  {k:'礼',kun:{r:'れい',ok:''},on:{r:'れい'},ex:'おれいを言う',hint:'感謝・あいさつ',keys:['礼']},
+  {k:'列',kun:{r:'れつ',ok:''},on:{r:'れつ'},ex:'れつに並ぶ',hint:'並んだ並び',keys:['列']},
+  {k:'練',kun:{r:'れん',ok:''},on:{r:'れん'},ex:'れんしゅうをする',hint:'くり返して上手になる',keys:['練']},
+  {k:'路',kun:{r:'みち',ok:''},on:{r:'ろ'},ex:'どうろを渡る',hint:'道・通路',keys:['路']},
+  {k:'和',kun:{r:'わ',ok:''},on:{r:'わ'},ex:'へいわを願う',hint:'なごやか・日本',keys:['和']}
+];
+
+// 熟語マスター
+const JUKU_MASTER=[
+  {w:'悪人',r:'あくにん',hint:'わるい人',keys:['悪']},
+  {w:'悪口',r:'わるぐち',hint:'わるいことを言う',keys:['悪']},
+  {w:'最悪',r:'さいあく',hint:'一番わるい状態',keys:['悪']},
+  {w:'安心',r:'あんしん',hint:'「安」やすらか＋「心」こころ',keys:['安']},
+  {w:'安全',r:'あんぜん',hint:'「安」やすらか＋「全」すべて',keys:['安','全']},
+  {w:'不安',r:'ふあん',hint:'「不」ない＋「安」やすらか',keys:['安']},
+  {w:'医者',r:'いしゃ',hint:'「医」いやす＋「者」もの',keys:['医','者']},
+  {w:'意見',r:'いけん',hint:'「意」かんがえ＋「見」みかた',keys:['意']},
+  {w:'意味',r:'いみ',hint:'言葉のもつ内容',keys:['意']},
+  {w:'注意',r:'ちゅうい',hint:'「注」そそぐ＋「意」こころ',keys:['意','注']},
+  {w:'用意',r:'ようい',hint:'前もって準備する',keys:['意']},
+  {w:'体育',r:'たいいく',hint:'「体」からだ＋「育」そだてる',keys:['育']},
+  {w:'教育',r:'きょういく',hint:'教えて育てること',keys:['育']},
+  {w:'委員',r:'いいん',hint:'「委」まかせる＋「員」メンバー',keys:['委','員']},
+  {w:'全員',r:'ぜんいん',hint:'「全」すべて＋「員」メンバー',keys:['全','員']},
+  {w:'病院',r:'びょういん',hint:'「病」やまい＋「院」建物',keys:['病','院']},
+  {w:'入院',r:'にゅういん',hint:'病院に入ること',keys:['院']},
+  {w:'運動',r:'うんどう',hint:'「運」はこぶ＋「動」うごく',keys:['運','動']},
+  {w:'運転',r:'うんてん',hint:'乗り物を動かすこと',keys:['運']},
+  {w:'幸運',r:'こううん',hint:'「幸」しあわせ＋「運」めぐりあわせ',keys:['幸','運']},
+  {w:'水泳',r:'すいえい',hint:'「水」みず＋「泳」およぐ',keys:['泳']},
+  {w:'温度',r:'おんど',hint:'「温」あたたかさ＋「度」程度',keys:['温','度']},
+  {w:'体温',r:'たいおん',hint:'「体」からだ＋「温」あたたかさ',keys:['温']},
+  {w:'温泉',r:'おんせん',hint:'「温」あたたかい＋「泉」わき水',keys:['温']},
+  {w:'変化',r:'へんか',hint:'「変」かわる＋「化」なる',keys:['化']},
+  {w:'文化',r:'ぶんか',hint:'人間がつくりあげたもの',keys:['化']},
+  {w:'進化',r:'しんか',hint:'「進」すすむ＋「化」かわる',keys:['化','進']},
+  {w:'世界',r:'せかい',hint:'「世」よのなか＋「界」さかい',keys:['界','世']},
+  {w:'開始',r:'かいし',hint:'「開」ひらく＋「始」はじめる',keys:['開','始']},
+  {w:'開放',r:'かいほう',hint:'「開」ひらく＋「放」はなす',keys:['開','放']},
+  {w:'感想',r:'かんそう',hint:'「感」感じる＋「想」思う',keys:['感','想']},
+  {w:'感動',r:'かんどう',hint:'「感」感じる＋「動」うごく',keys:['感','動']},
+  {w:'感謝',r:'かんしゃ',hint:'ありがとうという気もち',keys:['感']},
+  {w:'感心',r:'かんしん',hint:'すごいと思う気もち',keys:['感']},
+  {w:'図書館',r:'としょかん',hint:'「図書」本＋「館」大きな建物',keys:['館']},
+  {w:'体育館',r:'たいいくかん',hint:'体育をする建物',keys:['館','育']},
+  {w:'水族館',r:'すいぞくかん',hint:'水の生き物を見る建物',keys:['館']},
+  {w:'海岸',r:'かいがん',hint:'「海」うみ＋「岸」きし',keys:['岸']},
+  {w:'急行',r:'きゅうこう',hint:'「急」いそぐ＋「行」いく',keys:['急']},
+  {w:'急速',r:'きゅうそく',hint:'「急」いそぐ＋「速」はやい',keys:['急','速']},
+  {w:'学級',r:'がっきゅう',hint:'学校のクラス',keys:['級']},
+  {w:'過去',r:'かこ',hint:'前の時代',keys:['去']},
+  {w:'作業',r:'さぎょう',hint:'「作」つくる＋「業」しごと',keys:['業']},
+  {w:'農業',r:'のうぎょう',hint:'「農」のうか＋「業」しごと',keys:['農','業']},
+  {w:'授業',r:'じゅぎょう',hint:'学校で教わること',keys:['業']},
+  {w:'作曲',r:'さっきょく',hint:'音楽をつくること',keys:['曲']},
+  {w:'銀行',r:'ぎんこう',hint:'「銀」ぎん＋「行」いく場所',keys:['銀']},
+  {w:'苦手',r:'にがて',hint:'うまくできないこと',keys:['苦']},
+  {w:'道具',r:'どうぐ',hint:'使う道具',keys:['具']},
+  {w:'決定',r:'けってい',hint:'「決」きめる＋「定」さだめる',keys:['決','定']},
+  {w:'解決',r:'かいけつ',hint:'問題がなくなること',keys:['決']},
+  {w:'決勝',r:'けっしょう',hint:'勝負を決める試合',keys:['決','勝']},
+  {w:'研究',r:'けんきゅう',hint:'「研」みがく＋「究」きわめる',keys:['研','究']},
+  {w:'車庫',r:'しゃこ',hint:'車をしまう場所',keys:['庫']},
+  {w:'方向',r:'ほうこう',hint:'むかう方の向き',keys:['向']},
+  {w:'幸福',r:'こうふく',hint:'「幸」しあわせ＋「福」よいこと',keys:['幸','福']},
+  {w:'番号',r:'ばんごう',hint:'「番」順番＋「号」しるし',keys:['号']},
+  {w:'信号',r:'しんごう',hint:'交通のしるし',keys:['号']},
+  {w:'大根',r:'だいこん',hint:'「大」おおきい＋「根」ね',keys:['根']},
+  {w:'仕事',r:'しごと',hint:'「仕」する＋「事」こと',keys:['仕','事']},
+  {w:'開始',r:'かいし',hint:'「開」ひらく＋「始」はじめる',keys:['始','開']},
+  {w:'指定',r:'してい',hint:'「指」さす＋「定」さだめる',keys:['指','定']},
+  {w:'実力',r:'じつりょく',hint:'本当の力',keys:['実']},
+  {w:'写真',r:'しゃしん',hint:'「写」うつす＋「真」ほんとう',keys:['真','写']},
+  {w:'真実',r:'しんじつ',hint:'「真」ほんとう＋「実」じつ',keys:['真','実']},
+  {w:'守備',r:'しゅび',hint:'まもること',keys:['守']},
+  {w:'受験',r:'じゅけん',hint:'試験を受けること',keys:['受']},
+  {w:'終了',r:'しゅうりょう',hint:'終わること',keys:['終']},
+  {w:'練習',r:'れんしゅう',hint:'「練」くりかえす＋「習」まなぶ',keys:['習','練']},
+  {w:'予習',r:'よしゅう',hint:'「予」あらかじめ＋「習」まなぶ',keys:['習','予']},
+  {w:'復習',r:'ふくしゅう',hint:'習ったことを見直すこと',keys:['習']},
+  {w:'集合',r:'しゅうごう',hint:'「集」あつまる＋「合」あわせる',keys:['集']},
+  {w:'住所',r:'じゅうしょ',hint:'「住」すむ＋「所」ところ',keys:['住','所']},
+  {w:'体重',r:'たいじゅう',hint:'「体」からだ＋「重」おもさ',keys:['重']},
+  {w:'重要',r:'じゅうよう',hint:'とても大切なこと',keys:['重']},
+  {w:'宿題',r:'しゅくだい',hint:'「宿」やど＋「題」もんだい',keys:['宿','題']},
+  {w:'場所',r:'ばしょ',hint:'「場」ば＋「所」ところ',keys:['所']},
+  {w:'救助',r:'きゅうじょ',hint:'救い助けること',keys:['助']},
+  {w:'消防',r:'しょうぼう',hint:'火を消す仕事',keys:['消']},
+  {w:'商店',r:'しょうてん',hint:'物を売るお店',keys:['商']},
+  {w:'文章',r:'ぶんしょう',hint:'言葉でかいた文',keys:['章']},
+  {w:'勝負',r:'しょうぶ',hint:'「勝」かつ＋「負」まける',keys:['勝','負']},
+  {w:'勝利',r:'しょうり',hint:'「勝」かつ＋「利」いい結果',keys:['勝']},
+  {w:'優勝',r:'ゆうしょう',hint:'一番になること',keys:['勝']},
+  {w:'乗車',r:'じょうしゃ',hint:'乗り物に乗ること',keys:['乗']},
+  {w:'身体',r:'しんたい',hint:'「身」み＋「体」からだ',keys:['身']},
+  {w:'神社',r:'じんじゃ',hint:'神様をまつる場所',keys:['神']},
+  {w:'深海',r:'しんかい',hint:'「深」ふかい＋「海」うみ',keys:['深']},
+  {w:'深呼吸',r:'しんこきゅう',hint:'「深」ふかく＋いきをする',keys:['深','息']},
+  {w:'前進',r:'ぜんしん',hint:'前にすすむこと',keys:['進']},
+  {w:'進学',r:'しんがく',hint:'上の学校に進むこと',keys:['進']},
+  {w:'整理',r:'せいり',hint:'きれいに整えること',keys:['整']},
+  {w:'整列',r:'せいれつ',hint:'「整」ととのえる＋「列」ならぶ',keys:['整','列']},
+  {w:'全部',r:'ぜんぶ',hint:'すべて',keys:['全']},
+  {w:'全力',r:'ぜんりょく',hint:'「全」すべて＋「力」ちから',keys:['全']},
+  {w:'感想',r:'かんそう',hint:'「感」感じる＋「想」思う',keys:['想','感']},
+  {w:'想像',r:'そうぞう',hint:'「想」おもう＋「像」かたち',keys:['想']},
+  {w:'速度',r:'そくど',hint:'「速」はやい＋「度」程度',keys:['速','度']},
+  {w:'高速',r:'こうそく',hint:'スピードが高いこと',keys:['速']},
+  {w:'全速力',r:'ぜんそくりょく',hint:'「全」すべて＋「速」はやい＋「力」',keys:['速','全']},
+  {w:'家族',r:'かぞく',hint:'「家」いえ＋「族」なかま',keys:['族']},
+  {w:'反対',r:'はんたい',hint:'「反」さからう＋「対」むかいあう',keys:['対','反']},
+  {w:'対決',r:'たいけつ',hint:'「対」むかいあう＋「決」きめる',keys:['対','決']},
+  {w:'期待',r:'きたい',hint:'「期」とき＋「待」まつ',keys:['待','期']},
+  {w:'時代',r:'じだい',hint:'「時」とき＋「代」かわる',keys:['代']},
+  {w:'代表',r:'だいひょう',hint:'「代」かわり＋「表」おもて',keys:['代']},
+  {w:'問題',r:'もんだい',hint:'「問」もん＋「題」だい',keys:['題','問']},
+  {w:'宿題',r:'しゅくだい',hint:'「宿」やど＋「題」もんだい',keys:['題','宿']},
+  {w:'短所',r:'たんしょ',hint:'「短」みじかい＋「所」ところ',keys:['短','所']},
+  {w:'相談',r:'そうだん',hint:'「相」あい＋「談」はなす',keys:['談']},
+  {w:'到着',r:'とうちゃく',hint:'目的地に着くこと',keys:['着']},
+  {w:'注目',r:'ちゅうもく',hint:'「注」そそぐ＋「目」みる',keys:['注']},
+  {w:'注意',r:'ちゅうい',hint:'「注」そそぐ＋「意」こころ',keys:['注','意']},
+  {w:'調査',r:'ちょうさ',hint:'「調」しらべる＋「査」たしかめる',keys:['調']},
+  {w:'調整',r:'ちょうせい',hint:'「調」しらべる＋「整」ととのえる',keys:['調','整']},
+  {w:'予定',r:'よてい',hint:'「予」あらかじめ＋「定」さだめる',keys:['定','予']},
+  {w:'決定',r:'けってい',hint:'「決」きめる＋「定」さだめる',keys:['定','決']},
+  {w:'鉄道',r:'てつどう',hint:'電車が走る道',keys:['鉄']},
+  {w:'地下鉄',r:'ちかてつ',hint:'地下を走る電車',keys:['鉄']},
+  {w:'運転',r:'うんてん',hint:'乗り物を動かすこと',keys:['転','運']},
+  {w:'回転',r:'かいてん',hint:'くるくる回ること',keys:['転']},
+  {w:'転校',r:'てんこう',hint:'学校を変わること',keys:['転']},
+  {w:'都市',r:'とし',hint:'人が多く住む場所',keys:['都']},
+  {w:'温度',r:'おんど',hint:'「温」あたたかさ＋「度」程度',keys:['度','温']},
+  {w:'島国',r:'しまぐに',hint:'「島」しま＋「国」くに',keys:['島']},
+  {w:'半島',r:'はんとう',hint:'陸地から海に突き出た部分',keys:['島']},
+  {w:'登山',r:'とざん',hint:'「登」のぼる＋「山」やま',keys:['登']},
+  {w:'登場',r:'とうじょう',hint:'「登」のぼる＋「場」ところ',keys:['登']},
+  {w:'登校',r:'とうこう',hint:'学校に行くこと',keys:['登']},
+  {w:'平等',r:'びょうどう',hint:'「平」たいら＋「等」ひとしい',keys:['等','平']},
+  {w:'運動',r:'うんどう',hint:'「運」はこぶ＋「動」うごく',keys:['動','運']},
+  {w:'感動',r:'かんどう',hint:'「感」感じる＋「動」うごく',keys:['動','感']},
+  {w:'農業',r:'のうぎょう',hint:'「農」のうか＋「業」しごと',keys:['農','業']},
+  {w:'配達',r:'はいたつ',hint:'届けること',keys:['配']},
+  {w:'心配',r:'しんぱい',hint:'「心」こころ＋「配」くばる',keys:['配']},
+  {w:'出発',r:'しゅっぱつ',hint:'「出」でる＋「発」はじまる',keys:['発']},
+  {w:'発見',r:'はっけん',hint:'新しく見つけること',keys:['発']},
+  {w:'発表',r:'はっぴょう',hint:'「発」はじめる＋「表」おもて',keys:['発','表']},
+  {w:'反対',r:'はんたい',hint:'「反」さからう＋「対」むかいあう',keys:['反','対']},
+  {w:'黒板',r:'こくばん',hint:'「黒」くろ＋「板」いた',keys:['板']},
+  {w:'悲鳴',r:'ひめい',hint:'「悲」かなしい＋「鳴」なく',keys:['悲']},
+  {w:'美術',r:'びじゅつ',hint:'「美」うつくしい＋「術」わざ',keys:['美']},
+  {w:'発表',r:'はっぴょう',hint:'「発」はじめる＋「表」おもて',keys:['表','発']},
+  {w:'代表',r:'だいひょう',hint:'「代」かわり＋「表」おもて',keys:['表','代']},
+  {w:'病気',r:'びょうき',hint:'「病」やまい＋「気」き',keys:['病']},
+  {w:'商品',r:'しょうひん',hint:'「商」あきない＋「品」もの',keys:['品','商']},
+  {w:'部分',r:'ぶぶん',hint:'全体の一部',keys:['部']},
+  {w:'洋服',r:'ようふく',hint:'「洋」にしよう＋「服」ふく',keys:['服','洋']},
+  {w:'幸福',r:'こうふく',hint:'「幸」しあわせ＋「福」よいこと',keys:['福','幸']},
+  {w:'物語',r:'ものがたり',hint:'「物」もの＋「語」かたる',keys:['物']},
+  {w:'動物',r:'どうぶつ',hint:'「動」うごく＋「物」もの',keys:['物','動']},
+  {w:'平和',r:'へいわ',hint:'「平」たいら＋「和」なごやか',keys:['平','和']},
+  {w:'放送',r:'ほうそう',hint:'テレビやラジオで伝えること',keys:['放']},
+  {w:'命令',r:'めいれい',hint:'「命」命じる＋「令」しじ',keys:['命']},
+  {w:'運命',r:'うんめい',hint:'「運」めぐりあわせ＋「命」',keys:['命','運']},
+  {w:'質問',r:'しつもん',hint:'わからないことを聞くこと',keys:['問']},
+  {w:'役割',r:'やくわり',hint:'それぞれの仕事',keys:['役']},
+  {w:'自由',r:'じゆう',hint:'「自」じぶん＋「由」わけ',keys:['由']},
+  {w:'理由',r:'りゆう',hint:'なぜそうなのかという訳',keys:['由']},
+  {w:'有名',r:'ゆうめい',hint:'「有」ある＋「名」なまえ',keys:['有']},
+  {w:'有料',r:'ゆうりょう',hint:'お金がかかること',keys:['有']},
+  {w:'予定',r:'よてい',hint:'「予」あらかじめ＋「定」さだめる',keys:['予','定']},
+  {w:'太平洋',r:'たいへいよう',hint:'一番大きな海',keys:['洋','平']},
+  {w:'言葉',r:'ことば',hint:'「言」こと＋「葉」は',keys:['葉']},
+  {w:'紅葉',r:'こうよう',hint:'葉が赤や黄色になること',keys:['葉']},
+  {w:'落葉',r:'らくよう',hint:'「落」おちる＋「葉」は',keys:['葉','落']},
+  {w:'太陽',r:'たいよう',hint:'「太」ふとい＋「陽」ひかり',keys:['陽']},
+  {w:'流行',r:'りゅうこう',hint:'はやること',keys:['流']},
+  {w:'旅行',r:'りょこう',hint:'「旅」たび＋「行」いく',keys:['旅']},
+  {w:'旅館',r:'りょかん',hint:'「旅」たび＋「館」建物',keys:['旅','館']},
+  {w:'両手',r:'りょうて',hint:'「両」りょう＋「手」て',keys:['両']},
+  {w:'整列',r:'せいれつ',hint:'「整」ととのえる＋「列」ならぶ',keys:['列','整']},
+  {w:'練習',r:'れんしゅう',hint:'「練」くりかえす＋「習」まなぶ',keys:['練','習']},
+  {w:'道路',r:'どうろ',hint:'「道」みち＋「路」みち',keys:['路']},
+  {w:'進路',r:'しんろ',hint:'「進」すすむ＋「路」みち',keys:['路','進']},
+  {w:'平和',r:'へいわ',hint:'「平」たいら＋「和」なごやか',keys:['和','平']},
+  {w:'和食',r:'わしょく',hint:'日本料理',keys:['和']},
+];
+
+// 使い分け
+const TSUKAI=[
+  {q:'友達と（あう）',ans:'会う',wrong:['合う'],hint:'顔を合わせる→「会」'},
+  {q:'気が（あう）',ans:'合う',wrong:['会う'],hint:'ぴったりする→「合」'},
+  {q:'工場で車を（つくる）',ans:'造る',wrong:['作る','創る'],hint:'大きなものを製造する→「造」'},
+  {q:'詩を（つくる）',ans:'創る',wrong:['作る','造る'],hint:'新しいものを生み出す→「創」'},
+  {q:'箱を（つくる）',ans:'作る',wrong:['造る','創る'],hint:'手で物を作る→「作」'},
+  {q:'気温が（あつい）',ans:'暑い',wrong:['熱い','厚い'],hint:'気温が高い→「暑」'},
+  {q:'お湯が（あつい）',ans:'熱い',wrong:['暑い','厚い'],hint:'物の温度が高い→「熱」'},
+  {q:'家に（かえる）',ans:'帰る',wrong:['変える','替える'],hint:'元の場所に戻る→「帰」'},
+  {q:'形を（かえる）',ans:'変える',wrong:['帰る','替える'],hint:'形・様子をかえる→「変」'},
+  {q:'服を（きる）',ans:'着る',wrong:['切る'],hint:'洋服を身につける→「着」'},
+  {q:'紙を（きる）',ans:'切る',wrong:['着る'],hint:'刃で分ける→「切」'},
+  {q:'言葉を（はなす）',ans:'話す',wrong:['放す'],hint:'言葉で伝える→「話」'},
+  {q:'手を（はなす）',ans:'放す',wrong:['話す'],hint:'手をはなす→「放」'}
+];
+
+// ===== ステート =====
+let S={mode:'yomi',qn:20,ratio:'mix',correct:0,qnum:0,answered:false,weakMap:{},testKanji:[],addedG3:[],queue:[],cur:null,missSession:[]};
+
+function loadData(){
+  const keys=['kanji_v26','kanji_v25','kanji_v24','kanji_v23','kanji_v22'];
+  for(const key of keys){
+    try{
+      const sv=localStorage.getItem(key);
+      if(sv){
+        const p=JSON.parse(sv);
+        if(p.addedG3&&p.addedG3.length>0){
+          S.weakMap=p.weakMap||{};S.testKanji=p.testKanji||[];S.addedG3=p.addedG3||[];
+          if(p.ratio) S.ratio=p.ratio;
+          return;
+        }
+      }
+    }catch(e){}
+  }
+}
+loadData();
+function save(){try{localStorage.setItem('kanji_v26',JSON.stringify({weakMap:S.weakMap,testKanji:S.testKanji,addedG3:S.addedG3,ratio:S.ratio}));}catch(e){}}
+
+// 追加した漢字の関連熟語を取得
+function getActiveJuku(){
+  const addedSet=new Set(S.addedG3);
+  const result=[];
+  const seen=new Set();
+  JUKU_MASTER.forEach(j=>{
+    if(!seen.has(j.w)&&j.keys.some(k=>addedSet.has(k))){
+      seen.add(j.w);
+      result.push({...j,qt:'juku'});
+    }
+  });
+  return result;
+}
+
+// ===== ナビ =====
+function goNav(id){
+  ['quiz','mgmt'].forEach(n=>{document.getElementById('nb-'+n).classList.toggle('on',n===id);document.getElementById('sec-'+n).classList.toggle('on',n===id);});
+  if(id==='mgmt'){renderG3Picker();renderTestPicker();renderWeakTags();}
+}
+function setMode(m){
+  S.mode=m;
+  ['yomi','kaki','test'].forEach(n=>document.getElementById('mb-'+n).classList.toggle('on',n===m));
+  document.getElementById('mlbl').textContent=m==='yomi'?'よみもんだい':m==='kaki'?'かきもんだい':'小テスト';
+  document.getElementById('qsel').style.display=m==='test'?'none':'flex';
+  startSess();
+}
+function setQN(n){S.qn=n;[20,30,50].forEach(x=>document.getElementById('qb'+x).classList.toggle('on',x===n));startSess();}
+function setRatio(r){S.ratio=r;['mix','only'].forEach(x=>document.getElementById('rb-'+x).classList.toggle('on',x===r));save();startSess();}
+
+// ===== 問題キュー =====
+function buildQ(){
+  const allK=[...K2,...K3];
+
+  if(S.mode==='test'){
+    if(S.testKanji.length===0){
+      document.getElementById('qbody').innerHTML='<div style="font-size:18px;text-align:center;padding:1.5rem;color:#888;font-weight:600">かんじかんりから小テストのかんじを追加してね</div>';
+      return false;
+    }
+    const pool=[];
+    S.testKanji.forEach(item=>{
+      const d=allK.find(x=>x.k===item);
+      if(d){
+        const w=1+(S.weakMap[item]||0)*3;
+        for(let i=0;i<w;i++) pool.push({...d,qt:'yomi'});
+        for(let i=0;i<w;i++) pool.push({...d,qt:'kaki'});
+        // 音読み問題
+        if(d.on&&d.on.r&&d.on.r!==d.kun.r){
+          for(let i=0;i<w;i++) pool.push({...d,qt:'on'});
+        }
+      } else {
+        const j=JUKU_MASTER.find(x=>x.w===item);
+        if(j){const w=1+(S.weakMap[item]||0)*3;for(let i=0;i<w;i++) pool.push({...j,qt:'juku'});}
+      }
+    });
+    TSUKAI.forEach(t=>{if(S.testKanji.some(k=>[t.ans,...t.wrong].some(w=>w.includes(k)))) pool.push({...t,qt:'tsukai'});});
+    const shuf=pool.sort(()=>Math.random()-.5);
+    const seen=new Set();const u=[];
+    for(const d of shuf){const key=(d.k||d.w||d.q)+(d.qt||'');if(!seen.has(key)){seen.add(key);u.push(d);}}
+    S.queue=u.slice(0,Math.min(Math.max(u.length,10),20));
+    S.qn=S.queue.length;
+    return true;
+  }
+
+  const pool=[];
+  const added=S.addedG3.map(k=>K3.find(d=>d.k===k)).filter(Boolean);
+  const activeJuku=getActiveJuku();
+
+  const addKanji=(d,baseW)=>{
+    const w=baseW+(S.weakMap[d.k]||0)*3;
+    const qt=S.mode==='kaki'?'kaki':'yomi';
+    for(let i=0;i<w;i++) pool.push({...d,qt});
+    // 読みモードのみ音読み問題も追加
+    if(S.mode==='yomi'&&d.on&&d.on.r&&d.on.r!==d.kun.r){
+      for(let i=0;i<Math.ceil(w/2);i++) pool.push({...d,qt:'on'});
+    }
+  };
+
+  if(S.ratio==='only'){
+    added.forEach(d=>addKanji(d,20));
+  } else {
+    added.forEach(d=>addKanji(d,16));
+    Object.entries(S.weakMap).filter(([,v])=>v>0).forEach(([k,v])=>{
+      if(!S.addedG3.includes(k)){
+        const d=K2.find(x=>x.k===k);
+        if(d){
+          const qt2=S.mode==='kaki'?'kaki':'yomi';
+          for(let i=0;i<v*3;i++) pool.push({...d,qt:qt2});
+        }
+      }
+    });
+    K2.forEach(d=>{
+      const w=3+(S.weakMap[d.k]||0)*2;
+      const qt2=S.mode==='kaki'?'kaki':'yomi';
+      for(let i=0;i<w;i++) pool.push({...d,qt:qt2});
+    });
+  }
+
+  if(S.mode==='yomi'){
+    activeJuku.forEach(j=>{for(let i=0;i<3;i++) pool.push(j);});
+    TSUKAI.forEach(t=>{for(let i=0;i<2;i++) pool.push({...t,qt:'tsukai'});});
+  }
+
+  const shuf=pool.sort(()=>Math.random()-.5);
+  const seen=new Set();const u=[];
+  for(const d of shuf){const key=(d.k||d.w||d.q)+(d.qt||'');if(!seen.has(key)){seen.add(key);u.push(d);}}
+  S.queue=u.slice(0,S.qn);
+  return true;
+}
+
+function startSess(){
+  S.correct=0;S.qnum=0;S.answered=false;S.missSession=[];
+  document.getElementById('rescrd').style.display='none';
+  document.getElementById('qcard').style.display='block';
+  document.getElementById('revbtn').style.display='none';
+  document.getElementById('sj').style.display='none';
+  document.getElementById('choices').innerHTML='';
+  document.getElementById('revbox').style.display='none';
+  document.getElementById('fb').textContent='';
+  if(!buildQ()) return;
+  updateStat();nextQ();
+}
+
+let autoTimer=null;
+
+function nextQ(){
+  if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+  if(S.qnum>=S.qn){showResult();return;}
+  S.answered=false;
+  document.getElementById('fb').textContent='';
+  document.getElementById('fb').className='fb';
+  document.getElementById('revbox').style.display='none';
+  document.getElementById('sj').style.display='none';
+  document.getElementById('revbtn').style.display='none';
+  document.getElementById('choices').innerHTML='';
+  document.getElementById('qhint').style.display='none';
+  document.getElementById('qnote').style.display='none';
+
+  S.cur=S.queue[S.qnum];
+  const d=S.cur;
+  const qt=d.qt||'yomi';
+
+  const bgs=[];
+  if(d.k){
+    const gn=K2.some(x=>x.k===d.k)?'2年生':'3年生';
+    bgs.push(`<span class="bdg bgrade">${gn}</span>`);
+  }
+  if(qt==='juku') bgs.push('<span class="bdg btype">じゅくご</span>');
+  else if(qt==='tsukai') bgs.push('<span class="bdg" style="background:#ffe066;color:#7a5800">つかいわけ</span>');
+  else if(qt==='kaki') bgs.push('<span class="bdg btype">かき</span>');
+  else if(qt==='on') bgs.push('<span class="bdg" style="background:#e8f5e9;color:#1b5e20">おんよみ</span>');
+  else bgs.push('<span class="bdg btype">よみ</span>');
+  if(d.k&&(S.weakMap[d.k]||0)>0) bgs.push(`<span class="bdg bweak">まちがい多い×${S.weakMap[d.k]}</span>`);
+  if(d.k&&S.addedG3.includes(d.k)) bgs.push('<span class="bdg badd">追加した字</span>');
+  document.getElementById('bdgs').innerHTML=bgs.join('');
+
+  const qbody=document.getElementById('qbody');
+
+  if(qt==='tsukai'){
+    qbody.innerHTML=`<div class="qmain small">${d.q}</div><div class="qsub">（　）に入る正しい漢字をえらぼう</div>`;
+    renderTsukai(d);
+  } else if(qt==='juku'){
+    qbody.innerHTML=`<div class="qmain med">${d.w}</div><div class="qsub">このじゅくごの読み方は？</div>`;
+    if(d.hint){const h=document.getElementById('qhint');h.textContent='ヒント: '+d.hint;h.style.display='block';}
+    renderJuku(d);
+  } else if(qt==='on'){
+    // 音読み問題：漢字を表示して音読みを選ぶ
+    const ok=d.on.r;
+    qbody.innerHTML=`<div class="qmain">${d.k}</div><div class="qsub">この漢字のおんよみは？</div>`;
+    if(d.hint){const h=document.getElementById('qhint');h.textContent='ヒント: '+d.hint;h.style.display='block';}
+    renderOn(d);
+  } else if(qt==='kaki'){
+    const ex=d.ex||'';
+    const r=d.kun.r;
+    const ok=d.kun.ok||'';
+    const highlighted=ex.replace(r+ok,`<span class="kaki-blank">${r}</span><span class="kaki-oku">${ok}</span>`);
+    qbody.innerHTML=`<div class="kaki-sentence">${highlighted}</div><div class="qsub" style="margin-top:.5rem">オレンジの読み方の漢字を紙に書いてね</div>`;
+    const note=document.getElementById('qnote');
+    note.textContent='書いたら「こたえを見る」をおしてね';
+    note.style.display='block';
+    document.getElementById('revbtn').style.display='block';
+  } else {
+    // 訓読み問題
+    const ok=d.kun.ok||'';
+    qbody.innerHTML=`<div class="qmain">${d.k}${ok}</div><div class="qsub">この漢字のくんよみは？</div>`;
+    if(d.hint){const h=document.getElementById('qhint');h.textContent='ヒント: '+d.hint;h.style.display='block';}
+    renderYomi(d);
+  }
+
+  document.getElementById('pf').style.width=Math.round(S.qnum/S.qn*100)+'%';
+  document.getElementById('ptxt').textContent=S.qnum+'もんかんりょう';
+}
+
+function renderYomi(d){
+  const all=[...K2,...K3];
+  const wrong=all.filter(x=>x.k!==d.k&&x.kun.r!==d.kun.r).sort(()=>Math.random()-.5).slice(0,3);
+  const opts=[{r:d.kun.r},...wrong.map(x=>({r:x.kun.r}))].sort(()=>Math.random()-.5);
+  const el=document.getElementById('choices');
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.className='ch';
+    b.textContent=o.r;
+    b.onclick=()=>checkA(o.r===d.kun.r,b,d.k,null);
+    el.appendChild(b);
+  });
+}
+
+function renderOn(d){
+  const all=[...K2,...K3].filter(x=>x.on&&x.on.r&&x.on.r!==d.on.r);
+  const wrong=all.sort(()=>Math.random()-.5).slice(0,3);
+  const opts=[{r:d.on.r},...wrong.map(x=>({r:x.on.r}))].sort(()=>Math.random()-.5);
+  const el=document.getElementById('choices');
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.className='ch';
+    b.textContent=o.r;
+    b.onclick=()=>checkA(o.r===d.on.r,b,d.k,null);
+    el.appendChild(b);
+  });
+}
+
+function renderJuku(d){
+  const others=JUKU_MASTER.filter(j=>j.w!==d.w).sort(()=>Math.random()-.5).slice(0,3);
+  const opts=[d,...others].sort(()=>Math.random()-.5);
+  const el=document.getElementById('choices');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='ch';b.textContent=o.r;b.onclick=()=>checkA(o.r===d.r,b,null,d.hint);el.appendChild(b);});
+}
+
+function renderTsukai(d){
+  const opts=[d.ans,...d.wrong].sort(()=>Math.random()-.5);
+  const el=document.getElementById('choices');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='ch';b.textContent=o;b.onclick=()=>checkA(o===d.ans,b,null,d.hint);el.appendChild(b);});
+}
+
+function checkA(ok,btn,k,hint){
+  if(S.answered)return;
+  S.answered=true;
+  document.querySelectorAll('.ch').forEach(b=>b.disabled=true);
+  if(ok){
+    S.correct++;playSound('ok');btn.classList.add('ok');
+    document.getElementById('fb').textContent='正解！';document.getElementById('fb').className='fb ok';
+    S.qnum++;updateStat();autoTimer=setTimeout(()=>nextQ(),900);
+  } else {
+    playSound('ng');btn.classList.add('ng');
+    if(k){addWeak(k);S.missSession.push(k);}
+    else if(S.cur.w){addWeak(S.cur.w);S.missSession.push(S.cur.w);}
+    const correct=S.cur.qt==='tsukai'?S.cur.ans:S.cur.qt==='on'?S.cur.on.r:S.cur.qt==='juku'?S.cur.r:S.cur.kun.r;
+    const cb=Array.from(document.querySelectorAll('.ch')).find(b=>b.textContent===correct);
+    document.getElementById('fb').textContent='まちがい！ 正しくは「'+correct+'」';
+    document.getElementById('fb').className='fb ng';
+    if(hint){const h=document.getElementById('qhint');h.textContent='ヒント: '+hint;h.style.display='block';}
+    let cnt=0;
+    const iv=setInterval(()=>{
+      if(cb){cb.classList.toggle('ok');cb.style.opacity=cb.classList.contains('ok')?'1':'0.15';}
+      cnt++;
+      if(cnt>=6){clearInterval(iv);if(cb){cb.classList.add('ok');cb.style.opacity='1';}S.qnum++;updateStat();autoTimer=setTimeout(()=>nextQ(),700);}
+    },350);
+  }
+}
+
+function doReveal(){
+  const d=S.cur;
+  const ok=d.kun.ok||'';
+  document.getElementById('revk').textContent=d.k+ok;
+  document.getElementById('revr').textContent='読み: '+d.kun.r+ok+(d.on?'　音読み: '+d.on.r:'');
+  document.getElementById('revex').textContent='例文: '+d.ex;
+  document.getElementById('revbox').style.display='block';
+  document.getElementById('revbtn').style.display='none';
+  document.getElementById('sj').style.display='flex';
+}
+
+function judge(ok){
+  if(S.answered)return;
+  S.answered=true;
+  const d=S.cur;
+  if(ok){S.correct++;playSound('ok');document.getElementById('fb').textContent='正解！';document.getElementById('fb').className='fb ok';}
+  else{addWeak(d.k);S.missSession.push(d.k);playSound('ng');document.getElementById('fb').textContent='つぎはがんばろう！';document.getElementById('fb').className='fb ng';}
+  document.getElementById('sj').style.display='none';
+  S.qnum++;updateStat();autoTimer=setTimeout(()=>nextQ(),1000);
+}
+
+function addWeak(k){S.weakMap[k]=(S.weakMap[k]||0)+1;save();}
+
+function updateStat(){
+  const pt=Math.round(S.correct/S.qn*100);
+  document.getElementById('s-pt').textContent=pt;
+  document.getElementById('s-q').textContent=S.qnum+'/'+S.qn;
+  document.getElementById('s-ok').textContent=S.correct;
+  document.getElementById('s-wk').textContent=Object.values(S.weakMap).filter(v=>v>0).length;
+}
+
+// ===== ご褒美判定 =====
+function getReward(mode,pt){
+  if(mode==='kaki'){
+    if(pt===100) return {min:15,label:'🎮 ゲーム15ふんのごほうび！',cls:'gold'};
+    if(pt>=90)   return {min:10,label:'🎮 ゲーム10ふんのごほうび！',cls:'reward'};
+    if(pt>=80)   return {min:5, label:'🎮 ゲーム5ふんのごほうび！',cls:'silver'};
+  } else {
+    if(pt===100) return {min:10,label:'🎮 ゲーム10ふんのごほうび！',cls:'gold'};
+    if(pt>=95)   return {min:5, label:'🎮 ゲーム5ふんのごほうび！',cls:'reward'};
+  }
+  return null;
+}
+
+function showResult(){
+  document.getElementById('qcard').style.display='none';
+  document.getElementById('choices').innerHTML='';
+  document.getElementById('revbox').style.display='none';
+  document.getElementById('sj').style.display='none';
+  document.getElementById('fb').textContent='';
+  document.getElementById('pf').style.width='100%';
+  document.getElementById('ptxt').textContent=S.qn+'もんかんりょう！';
+
+  const pt=Math.round(S.correct/S.qn*100);
+  document.getElementById('respt').textContent=pt+'点';
+  document.getElementById('ressub').textContent=S.qn+'もん中'+S.correct+'もん正解';
+
+  const modeLabel=S.mode==='yomi'?'よみもんだい':S.mode==='kaki'?'かきもんだい':'小テスト';
+  const ratioLabel=S.ratio==='only'?'3年のみ':'まぜまぜ';
+
+  const msgEl=document.getElementById('resmsg');
+  if(pt>=90){msgEl.textContent='すばらしい！'+modeLabel+'（'+ratioLabel+'）';msgEl.className='resmsg';}
+  else if(pt>=70){msgEl.textContent='よくできました！'+modeLabel+'（'+ratioLabel+'）';msgEl.className='resmsg';}
+  else{msgEl.textContent='がんばろう！まちがえた字は重点れんしゅうだよ。';msgEl.className='resmsg';}
+
+  // ご褒美
+  const reward=getReward(S.mode,pt);
+  const rb=document.getElementById('reward-box');
+  if(reward){
+    playSound('perfect');
+    rb.innerHTML=`<div class="reward ${reward.cls}">${reward.label}</div>`;
+  } else {
+    rb.innerHTML='';
+  }
+
+  // まちがえた漢字
+  const ml=document.getElementById('misslist');ml.innerHTML='';
+  if(S.missSession.length>0){
+    const lbl=document.createElement('div');lbl.style.cssText='width:100%;font-size:11px;color:#aaa;margin-bottom:4px';lbl.textContent='まちがえた漢字（つぎに多く出るよ）:';ml.appendChild(lbl);
+    [...new Set(S.missSession)].forEach(k=>{const t=document.createElement('span');t.className='mtag';t.textContent=k;ml.appendChild(t);});
+  }
+
+  // 日付
+  document.getElementById('resdate').textContent=new Date().toLocaleDateString('ja-JP');
+
+  document.getElementById('rescrd').style.display='block';
+  updateStat();
+}
+
+// ===== 結果カードを画像保存 =====
+function saveResultImg(){
+  const card=document.getElementById('result-card');
+  // html2canvas的な簡易実装（Canvas API）
+  const pt=document.getElementById('respt').textContent;
+  const sub=document.getElementById('ressub').textContent;
+  const msg=document.getElementById('resmsg').textContent;
+  const rwEl=document.getElementById('reward-box').querySelector('.reward');
+  const rw=rwEl?rwEl.textContent:'';
+  const date=document.getElementById('resdate').textContent;
+
+  const canvas=document.createElement('canvas');
+  canvas.width=600;canvas.height=400;
+  const ctx=canvas.getContext('2d');
+
+  // 背景グラデーション
+  const grad=ctx.createLinearGradient(0,0,600,400);
+  grad.addColorStop(0,'#fff9e6');grad.addColorStop(.5,'#fff0f5');grad.addColorStop(1,'#e8f4ff');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,600,400);
+
+  // 枠
+  ctx.strokeStyle='#ffe066';ctx.lineWidth=6;ctx.strokeRect(12,12,576,376);
+
+  // タイトル
+  ctx.fillStyle='#ff6b35';ctx.font='bold 28px sans-serif';ctx.textAlign='center';
+  ctx.fillText('🌟 かんじれんしゅう',300,56);
+
+  // 点数
+  ctx.font='bold 96px sans-serif';ctx.fillStyle='#f7971e';
+  ctx.fillText(pt,300,160);
+
+  // 正解数
+  ctx.font='bold 24px sans-serif';ctx.fillStyle='#555';
+  ctx.fillText(sub,300,200);
+
+  // メッセージ
+  ctx.font='bold 20px sans-serif';ctx.fillStyle='#333';
+  ctx.fillText(msg,300,240);
+
+  // ご褒美
+  if(rw){
+    ctx.fillStyle='#667eea';ctx.beginPath();ctx.roundRect(100,258,400,52,12);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 22px sans-serif';
+    ctx.fillText(rw,300,291);
+  }
+
+  // 日付
+  ctx.fillStyle='#aaa';ctx.font='18px sans-serif';
+  ctx.fillText(date,300,360);
+
+  // ダウンロード
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='kekka.png';
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+  });
+}
+
+// ===== 管理 =====
+function extractKanji(text){
+  const results=[];
+  const segments=text.split(/[\s\u3000,、。・]+/).filter(s=>s.length>0);
+  segments.forEach(seg=>{const k=[...seg].filter(c=>/[\u4e00-\u9fff\u3400-\u4dbf]/.test(c)).join('');if(k.length>=1) results.push(k);});
+  return [...new Set(results)];
+}
+
+function addManual(){
+  const inp=document.getElementById('mi');if(!inp)return;
+  const items=extractKanji(inp.value);
+  const newK=items.filter(k=>!S.addedG3.includes(k)&&K3.some(d=>d.k===k));
+  if(newK.length>0){S.addedG3=[...S.addedG3,...newK];save();renderG3Picker();}
+  inp.value='';
+}
+
+function renderG3Picker(){
+  const el=document.getElementById('g3-picker');if(!el)return;
+  el.innerHTML='';
+  K3.forEach(d=>{
+    const isOn=S.addedG3.includes(d.k);
+    const wc=S.weakMap[d.k]||0;
+    const btn=document.createElement('button');
+    btn.className='pk-btn'+(isOn?' added':'');
+    btn.textContent=d.k;
+    btn.title=d.kun.r+(d.kun.ok||'')+' / '+d.on.r+' / '+d.ex;
+    if(wc>0){const badge=document.createElement('span');badge.className='wb';badge.textContent='×'+wc;btn.appendChild(badge);}
+    btn.onclick=()=>{
+      if(S.addedG3.includes(d.k)) S.addedG3=S.addedG3.filter(x=>x!==d.k);
+      else S.addedG3.push(d.k);
+      save();renderG3Picker();
+    };
+    el.appendChild(btn);
+  });
+  const cnt=document.getElementById('g3-count');
+  if(cnt) cnt.textContent=S.addedG3.length+' / '+K3.length+'字 追加済み';
+}
+
+function selectAll3(){S.addedG3=[...new Set([...S.addedG3,...K3.map(d=>d.k)])];save();renderG3Picker();}
+function clearAll3(){S.addedG3=[];save();renderG3Picker();}
+
+function addTestKanji(){
+  const inp=document.getElementById('test-input');if(!inp)return;
+  const items=extractKanji(inp.value);
+  const newK=items.filter(k=>!S.testKanji.includes(k));
+  S.testKanji=[...S.testKanji,...newK];
+  inp.value='';save();renderTestPicker();
+}
+
+function addMissKanji(){
+  const inp=document.getElementById('miss-input');if(!inp)return;
+  const items=extractKanji(inp.value);
+  items.forEach(k=>{
+    S.weakMap[k]=(S.weakMap[k]||0)+3;
+    if(!S.testKanji.includes(k)) S.testKanji.push(k);
+    if(K3.some(d=>d.k===k)&&!S.addedG3.includes(k)) S.addedG3.push(k);
+  });
+  inp.value='';save();renderTestPicker();renderWeakTags();renderG3Picker();
+}
+
+function renderTestPicker(){
+  const el=document.getElementById('test-picker');if(!el)return;
+  if(S.testKanji.length===0){el.innerHTML='<div class="emsg">まだ小テストの漢字がありません</div>';const cnt=document.getElementById('test-count');if(cnt) cnt.textContent='0字選んでいます';return;}
+  el.innerHTML='';
+  S.testKanji.forEach(k=>{
+    const wc=S.weakMap[k]||0;
+    const span=document.createElement('span');
+    span.className='tag '+(wc>0?'tweak':'ttest');
+    span.textContent=k+(wc>0?'×'+wc:'');
+    span.title='タップで削除';
+    span.onclick=()=>{S.testKanji=S.testKanji.filter(x=>x!==k);save();renderTestPicker();};
+    el.appendChild(span);
+  });
+  const cnt=document.getElementById('test-count');if(cnt) cnt.textContent=S.testKanji.length+'字選んでいます';
+}
+
+function selectAllTest(){
+  const available=S.addedG3.filter(k=>K3.some(d=>d.k===k));
+  S.testKanji=[...new Set([...S.testKanji,...available])];
+  save();renderTestPicker();
+}
+function clearAllTest(){S.testKanji=[];save();renderTestPicker();}
+
+function renderWeakTags(){
+  const el=document.getElementById('tweak');
+  const ents=Object.entries(S.weakMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(ents.length===0){el.innerHTML='<div class="emsg">まだありません</div>';return;}
+  el.innerHTML='';
+  ents.forEach(([k,v])=>{
+    const t=document.createElement('span');t.className='tag tweak';t.textContent=k+'×'+v;t.title=v+'回まちがい・タップで解除';
+    t.onclick=()=>{delete S.weakMap[k];save();renderWeakTags();updateStat();renderG3Picker();};
+    el.appendChild(t);
+  });
+}
+
+function exportData(){
+  const data={addedG3:S.addedG3,weakMap:S.weakMap,testKanji:S.testKanji,ratio:S.ratio,exportDate:new Date().toLocaleDateString('ja-JP')};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='kanji_data.txt';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function importData(event){
+  const file=event.target.files[0];if(!file)return;
+  const msgEl=document.getElementById('import-msg');
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.addedG3) S.addedG3=data.addedG3;
+      if(data.weakMap) S.weakMap=data.weakMap;
+      if(data.testKanji) S.testKanji=data.testKanji;
+      if(data.ratio) S.ratio=data.ratio;
+      save();
+      renderG3Picker();renderTestPicker();renderWeakTags();
+      ['mix','only'].forEach(x=>document.getElementById('rb-'+x).classList.toggle('on',x===S.ratio));
+      startSess();updateStat();
+      msgEl.innerHTML='<div style="background:#c8e6c9;color:#1b5e20;padding:8px 10px;border-radius:10px;font-size:13px;font-weight:600;margin-top:6px">データを読み込みました！追加した漢字：'+S.addedG3.length+'字</div>';
+    }catch(err){
+      msgEl.innerHTML='<div style="background:#ffcdd2;color:#b71c1c;padding:8px 10px;border-radius:10px;font-size:13px;font-weight:600;margin-top:6px">読み込みに失敗しました。正しいファイルを選んでください。</div>';
+    }
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+// 初期化
+['mix','only'].forEach(x=>document.getElementById('rb-'+x).classList.toggle('on',x===S.ratio));
+renderG3Picker();renderWeakTags();renderTestPicker();
+startSess();
+</script>
+</body>
+</html>
